@@ -59,7 +59,12 @@ function loadShader(
     return shader;
 }
 
-export async function bindTexture(url: string, gl: WebGL2RenderingContext): Promise<Float32Array> {
+export type VolumeData = {
+    texture: WebGLTexture;
+    normalTexture: WebGLTexture;
+}
+
+export async function bindTexture(url: string, gl: WebGL2RenderingContext): Promise<VolumeData> {
     const buffer = await makeRequest("GET", url, "arraybuffer") as ArrayBuffer;
 
     if (!buffer) throw "Could not load the texture data.";
@@ -122,7 +127,7 @@ export async function bindTexture(url: string, gl: WebGL2RenderingContext): Prom
         normalData[i * 3 + 1] = -(volumeData[index(x, y - 1, z)] - volumeData[index(x, y + 1, z)]) / 2.0;
         normalData[i * 3 + 2] = (volumeData[index(x - 1, y, z)] - volumeData[index(x + 1, y, z)]) / 2.0;
 
-        let factor = Math.max(Math.abs(normalData[i * 3]), Math.max(Math.abs(normalData[i * 3 + 1]), Math.abs(normalData[i * 3 + 2])));
+        const factor = Math.max(Math.abs(normalData[i * 3]), Math.max(Math.abs(normalData[i * 3 + 1]), Math.abs(normalData[i * 3 + 2])));
         normalData[i * 3] /= factor;
         normalData[i * 3 + 1] /= factor;
         normalData[i * 3 + 2] /= factor;
@@ -151,5 +156,5 @@ export async function bindTexture(url: string, gl: WebGL2RenderingContext): Prom
         normalData
     );
 
-    return volumeData;
+    return {texture: texture as WebGLTexture, normalTexture: texture2 as WebGLTexture};
 }

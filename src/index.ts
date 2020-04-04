@@ -8,9 +8,10 @@ import { initShaderProgram, bindTexture } from "./shader";
 import TransferFunctionController from "./transferFunction";
 
 import View from './view';
-import MainView from './Views/mainView';
+import MainView from './Views/shadowView';
 import Camera from "./camera";
 import Settings from "./settings";
+import { mat4 } from "gl-matrix";
 
 async function Init(): Promise<void> {
     const canvas = document.querySelector("#theCanvas") as HTMLCanvasElement;
@@ -32,6 +33,8 @@ async function Init(): Promise<void> {
     const viewInfo = {
         program: viewProgram,
         uniformLocations: {
+            projectionMatrix: gl.getUniformLocation(viewProgram, "uProjectionMatrix"),
+            modelViewMatrix: gl.getUniformLocation(viewProgram, "uModelViewMatrix"),
         },
     };
 
@@ -49,7 +52,7 @@ async function Init(): Promise<void> {
     
     // TEMP
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const transferFunction = new TransferFunctionController(volumeData, sidebar);
+    //const transferFunction = new TransferFunctionController(volumeData, sidebar);
 
     const renderLoop = (): void => {
         // render to the canvas
@@ -61,7 +64,7 @@ async function Init(): Promise<void> {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-        renderView.render(canvas.clientWidth / canvas.clientHeight, camera, settings);
+        renderView.render(canvas.clientWidth / canvas.clientHeight, volumeData as any, camera, settings);
 
         //test = false;
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -73,6 +76,16 @@ async function Init(): Promise<void> {
         gl.depthFunc(gl.LEQUAL);
 
         gl.useProgram(viewInfo.program);
+
+        gl.uniformMatrix4fv(
+            viewInfo.uniformLocations.modelViewMatrix,
+            false,
+            mat4.create());
+        gl.uniformMatrix4fv(
+            viewInfo.uniformLocations.projectionMatrix,
+            false,
+            mat4.create());
+
         // render the cube with the texture we just rendered to
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, renderTarget.getTexture());

@@ -13,4 +13,5 @@ uniform sampler2D textureData;
 
 void main() {
     color = texture(textureData, texCoord);
+    if(length(color.rgb) <= 0.01) discard;
 }

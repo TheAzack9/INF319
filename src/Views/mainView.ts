@@ -1,14 +1,14 @@
 import View from '../view';
 import RenderTarget from '../renderTarget';
 import Settings from '../settings';
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import Camera from '../camera';
 import Mesh from '../mesh';
 import createCubeMesh from '../cubeMesh';
 
 import vert from "../source.vert";
 import frag from "../source.frag";
-import { initShaderProgram } from '../shader';
+import { initShaderProgram, VolumeData } from '../shader';
 
 class MainView implements View {
 
@@ -64,7 +64,7 @@ class MainView implements View {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    render(aspect: number, camera: Camera, settings: Settings): void {
+    render(aspect: number, volumeData: VolumeData, camera: Camera, settings: Settings): void {
         const gl = this.gl;
         if(this.updateFps(camera, settings)) {
 

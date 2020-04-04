@@ -71,7 +71,7 @@ export default class Settings {
 
     public skinOpacity(): number {
         const v = parseFloat(this.skinOpacityElem.value);
-        return Math.pow(v, 4);
+        return v;
     }
 
     public isOrtographicCamera(): boolean {
