@@ -48,7 +48,7 @@ export default class Camera {
     }
 
     private onMouseScroll(ev: WheelEvent): void {
-        this.zoom(-ev.deltaY / 20);
+        this.zoom(-0.5 * Math.sign(ev.deltaY));
     }
 
     public rotate(dTheta: number, dPhi: number): void {

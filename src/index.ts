@@ -1,7 +1,7 @@
 
 
-import viewVert from "./viewsource.vert";
-import viewFrag from "./viewsource.frag";
+import viewVert from "./shaders/viewsource.vert";
+import viewFrag from "./shaders/viewsource.frag";
 
 import createSquareMesh from "./squareMesh";
 import { initShaderProgram, bindTexture } from "./shader";
