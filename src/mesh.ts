@@ -90,6 +90,7 @@ export class Mesh {
 
         if (this.positionBuffer) {
             const vertexPosition = gl.getAttribLocation(shader, "aVertexPosition");
+            
             gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
             gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(vertexPosition);

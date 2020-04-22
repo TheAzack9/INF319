@@ -57,7 +57,7 @@ async function Init(): Promise<void> {
     const renderLoop = (): void => {
         // render to the canvas
         const renderTarget = renderView.getRenderTarget();
-        renderTarget.bindFramebuffer();
+        //renderTarget.bindFramebuffer();
 
         // Setup required OpenGL state for drawing the back faces and
         // composting with the background color
