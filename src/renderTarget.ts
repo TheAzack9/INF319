@@ -8,7 +8,9 @@ export default class RenderTarget {
     private width: number;
     private height: number;
 
-    public constructor(gl: WebGL2RenderingContext, width: number, height: number) {
+    private redOnly: boolean;
+
+    public constructor(gl: WebGL2RenderingContext, width: number, height: number, readonly = false) {
         const tex = gl.createTexture();
         if(tex == null) {
             throw "Failed to create texture for render target";
@@ -24,17 +26,23 @@ export default class RenderTarget {
         this.gl = gl;
         this.width = width;
         this.height = height;
+        this.redOnly = readonly;
         
         gl.bindTexture(gl.TEXTURE_2D, this.targetTexture);
     
         // set the filtering so we don't need mips
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-            width, height, 0,
-            gl.RGBA, gl.UNSIGNED_BYTE, null);
+        if(this.redOnly) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F,
+                width, height, 0,
+                gl.RGBA, gl.FLOAT, null);
+        } else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+                width, height, 0,
+                gl.RGBA, gl.UNSIGNED_BYTE, null);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
     
         // Create the depth buffer
         /*const dB = gl.createTexture();
@@ -53,6 +61,7 @@ export default class RenderTarget {
     
         const attachmentPoint = gl.COLOR_ATTACHMENT0;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, this.targetTexture, 0);
+
         //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthTexture, 0);
     }
 
@@ -62,9 +71,17 @@ export default class RenderTarget {
 
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.targetTexture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-            width, height, 0,
-            gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+        if(this.redOnly) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F,
+                width, height, 0,
+                gl.RGBA, gl.FLOAT, null);
+        } else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+                width, height, 0,
+                gl.RGBA, gl.UNSIGNED_BYTE, null);
+        }
+        
             
         /*gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);*/
@@ -93,4 +110,5 @@ export default class RenderTarget {
     public getHeight(): number {
         return this.height;
     }
+
 }

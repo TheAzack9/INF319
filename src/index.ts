@@ -24,6 +24,8 @@ async function Init(): Promise<void> {
         alert("Unable to initialize WebGL. Your browser or machine may not support it.");
         return;
     }
+    gl.getExtension('EXT_color_buffer_float');
+    gl.getExtension('EXT_float_blend');
 
     const renderView: View = new MainView(gl);
 

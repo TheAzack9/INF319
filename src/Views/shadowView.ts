@@ -60,8 +60,8 @@ class ShadowView implements View {
         this.reducedResolutionWidth = this.maxResolutionWidth;
         this.reducedResolutionHeight = this.maxResolutionHeight;
 
-        this.maxLayers = 200;
-        this.reducedLayers = 100;
+        this.maxLayers = 255;
+        this.reducedLayers = 255;
         this.layers = this.reducedLayers;
 
         
@@ -69,8 +69,8 @@ class ShadowView implements View {
         this.opacityBuffer = [];
         this.colorBuffer = [];
         for(let target = 0; target < this.planeCount; ++target) {
-            this.opacityBuffer.push(new RenderTarget(gl, this.maxResolutionWidth/4.0, this.maxResolutionHeight/4.0))
-            this.colorBuffer.push(new RenderTarget(gl, this.maxResolutionWidth/4.0, this.maxResolutionHeight/4.0))
+            this.opacityBuffer.push(new RenderTarget(gl, this.maxResolutionWidth, this.maxResolutionHeight, false))
+            this.colorBuffer.push(new RenderTarget(gl, this.maxResolutionWidth, this.maxResolutionHeight, false))
         }
 
         this.renderMesh = createSquareMesh();
