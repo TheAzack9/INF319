@@ -6,8 +6,8 @@ import Camera from '../camera';
 import Mesh from '../mesh';
 import createCubeMesh from '../cubeMesh';
 
-import vert from "../shaders/shadowsource.vert";
-import frag from "../shaders/shadowsource.frag";
+import blurringKernelVert from "../shaders/blurringKernel.vert";
+import blurringKernelFrag from "../shaders/blurringKernel.frag";
 
 import shadowvert from "../shaders/shadowplane.vert";
 import shadowfrag from "../shaders/shadowplane.frag";
@@ -34,6 +34,7 @@ class ShadowView implements View {
 
     private opacityBufferShader: any;
     private viewInfo: any;
+    private blurringKernelShader: any;
 
     private modelCenter: [number, number, number] = [0.5, 0.5, 0.5];
 
@@ -51,11 +52,13 @@ class ShadowView implements View {
     private maxLayers: number;
     private reducedLayers: number;
     private layers: number;
+
+    private blurringKernel: RenderTarget;
     
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
 
-        this.maxResolutionWidth = 2048;
+        this.maxResolutionWidth = 512;
         this.maxResolutionHeight = this.maxResolutionWidth;
         this.reducedResolutionWidth = this.maxResolutionWidth;
         this.reducedResolutionHeight = this.maxResolutionHeight;
@@ -72,6 +75,8 @@ class ShadowView implements View {
             this.opacityBuffer.push(new RenderTarget(gl, this.maxResolutionWidth, this.maxResolutionHeight, false))
             this.colorBuffer.push(new RenderTarget(gl, this.maxResolutionWidth, this.maxResolutionHeight, false))
         }
+
+        this.blurringKernel = new RenderTarget(gl, 512, 512);
 
         this.renderMesh = createSquareMesh();
 
@@ -98,6 +103,13 @@ class ShadowView implements View {
             }
         }
         
+        const blurringKernelProgram = initShaderProgram(gl, blurringKernelVert, blurringKernelFrag);
+        this.blurringKernelShader = {
+            program: blurringKernelProgram,
+            uniformLocations: {
+            }
+        }
+        
         const viewProgram = initShaderProgram(gl, viewVert, viewFrag);
         this.viewInfo = {
             program: viewProgram,
@@ -106,6 +118,28 @@ class ShadowView implements View {
                 modelViewMatrix: gl.getUniformLocation(viewProgram, "uModelViewMatrix"),
             },
         };
+
+        this.recomputeBlurringKernelTexture();
+    }
+
+    recomputeBlurringKernelTexture(): void {
+        const gl = this.gl;
+
+        this.blurringKernel.bindFramebuffer();
+        
+        gl.useProgram(this.blurringKernelShader.program);
+
+        const program = this.blurringKernelShader.program;
+
+        // TODO: Bind shader uniforms
+        
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.viewport(0, 0, this.blurringKernel.getWidth(), this.blurringKernel.getHeight());
+
+        this.renderMesh.bindShader(gl, this.blurringKernelShader.program);
+        gl.drawElements(gl.TRIANGLES, this.renderMesh.indiceCount(), gl.UNSIGNED_SHORT, 0);
     }
 
     render(aspect: number, volumeData: VolumeData, camera: Camera, settings: Settings): void {
@@ -199,38 +233,8 @@ class ShadowView implements View {
             gl.viewport(0, 0, this.renderTarget.getWidth(), this.renderTarget.getHeight());
 
             
-            
-            
-            // gl.useProgram(this.programInfo.program);
-            // gl.uniform3fv(this.programInfo.uniformLocations.eyePos, eye);
-
-            // const c1 = settings.colorSkin();
-            // gl.uniform3f(this.programInfo.uniformLocations.lowValColor, c1[0], c1[1], c1[2]);
-            // const c2 = settings.colorBone();
-            // gl.uniform3f(this.programInfo.uniformLocations.highValColor, c2[0], c2[1], c2[2]);
-
-            // gl.uniformMatrix4fv(
-            //     this.programInfo.uniformLocations.projectionMatrix,
-            //     false,
-            //     this.projectionMatrix);
-
-            // gl.uniformMatrix4fv(
-            //     this.programInfo.uniformLocations.modelViewMatrix,
-            //     false,
-            //     this.modelViewMatrix);
-
-            // gl.uniform1i(this.programInfo.uniformLocations.textureData, 0);
-            // gl.uniform1i(this.programInfo.uniformLocations.normalData, 1);
-            // gl.activeTexture(gl.TEXTURE0);
-            // gl.bindTexture(gl.TEXTURE_3D, volumeData.texture);
-            // gl.activeTexture(gl.TEXTURE1);
-            // gl.bindTexture(gl.TEXTURE_3D, volumeData.normalTexture);
             const depth = settings.skinOpacity();
-            // gl.uniform1f(this.programInfo.uniformLocations.depth, depth);
-            // {
-            //     this.mesh.bindShader(gl, this.programInfo.program);
-            //     //gl.drawElements(gl.TRIANGLES, this.mesh.indiceCount(), gl.UNSIGNED_SHORT, 0);
-            // }
+            
              gl.disable(gl.CULL_FACE);
             
             gl.useProgram(this.viewInfo.program);
@@ -271,7 +275,7 @@ class ShadowView implements View {
     }
 
     getRenderTarget(): RenderTarget {
-        return this.renderTarget;
+        return this.blurringKernel;
     }
 
 
