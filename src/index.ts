@@ -12,6 +12,7 @@ import MainView from './Views/shadowView';
 import Camera from "./camera";
 import Settings from "./settings";
 import { mat4 } from "gl-matrix";
+import ShadowView from "./Views/shadowView";
 
 async function Init(): Promise<void> {
     const canvas = document.querySelector("#theCanvas") as HTMLCanvasElement;
@@ -27,7 +28,7 @@ async function Init(): Promise<void> {
     gl.getExtension('EXT_color_buffer_float');
     gl.getExtension('EXT_float_blend');
 
-    const renderView: View = new MainView(gl);
+    const renderView: View = new ShadowView(gl);
 
 
 
@@ -41,13 +42,13 @@ async function Init(): Promise<void> {
     };
 
 
-    const settings = new Settings();
+    const volumeData = await bindTexture("./data/hand.dat", gl);
+    const settings = new Settings(volumeData);
     const camera = new Camera([0.5, 0.5, 0.5]);
 
     //mat4.ortho(projectionMatrix, -1.0, 1.0, 1.0, -1.0, zNear, zFar);
     //mat4.ortho(projectionMatrix, 0.0, 0.0, 1.0, 1.0, zNear, zFar);
 
-    const volumeData = await bindTexture("./data/hand.dat", gl);
 
     const view = createSquareMesh();
     const sidebar = document.getElementById("sidebar") as HTMLDivElement

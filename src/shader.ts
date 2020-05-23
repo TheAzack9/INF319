@@ -1,5 +1,6 @@
 import makeRequest from "./util";
 import { isNullOrUndefined } from "util";
+import { mat4, vec3 } from "gl-matrix";
 
 
 /**
@@ -62,6 +63,7 @@ function loadShader(
 export type VolumeData = {
     texture: WebGLTexture;
     normalTexture: WebGLTexture;
+    scale: vec3;
 }
 
 export async function bindTexture(url: string, gl: WebGL2RenderingContext): Promise<VolumeData> {
@@ -75,6 +77,10 @@ export async function bindTexture(url: string, gl: WebGL2RenderingContext): Prom
     const height = floatArray[1];
     const depth = floatArray[2];
     console.log(width, height, depth);
+
+    const maxSize = Math.max(width, Math.max(height, depth));
+    const scaleVector = vec3.fromValues(width/maxSize, height/maxSize, depth/maxSize);
+
 
     // Normalize
     console.log("Calculating max");
@@ -120,9 +126,9 @@ export async function bindTexture(url: string, gl: WebGL2RenderingContext): Prom
     let index = (x: number, y: number, z: number) => Math.max(Math.min(x + y * width + z * width * height, volumeData.length), 0);
 
     for (let i = 0; i < volumeData.length; ++i) {
-        let x = Math.round((i)) % width;
-        let y = Math.round((i / width)) % height;
-        let z = Math.round((i / width / height)) % depth;
+        const x = Math.round((i)) % width;
+        const y = Math.round((i / width)) % height;
+        const z = Math.round((i / width / height)) % depth;
         normalData[i * 3] = (volumeData[index(x, y, z - 1)] - volumeData[index(x, y, z + 1)]) / 2.0;
         normalData[i * 3 + 1] = -(volumeData[index(x, y - 1, z)] - volumeData[index(x, y + 1, z)]) / 2.0;
         normalData[i * 3 + 2] = (volumeData[index(x - 1, y, z)] - volumeData[index(x + 1, y, z)]) / 2.0;
@@ -156,5 +162,5 @@ export async function bindTexture(url: string, gl: WebGL2RenderingContext): Prom
         normalData
     );
 
-    return {texture: texture as WebGLTexture, normalTexture: texture2 as WebGLTexture};
+    return {texture: texture as WebGLTexture, normalTexture: texture2 as WebGLTexture, scale: scaleVector};
 }

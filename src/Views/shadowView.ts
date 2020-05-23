@@ -1,7 +1,7 @@
 import View from '../view';
 import RenderTarget from '../renderTarget';
 import Settings from '../settings';
-import { mat4, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec3, vec4, mat3 } from 'gl-matrix';
 import Camera from '../camera';
 import Mesh from '../mesh';
 import createCubeMesh from '../cubeMesh';
@@ -24,7 +24,7 @@ class ShadowView implements View {
 
     private renderTarget: RenderTarget;
 
-    private readonly planeCount = 2;
+    private readonly planeCount = 257;
     private opacityBuffer: RenderTarget[];
     private colorBuffer: RenderTarget[];
     private renderMesh: Mesh;
@@ -58,13 +58,13 @@ class ShadowView implements View {
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
 
-        this.maxResolutionWidth = 512;
+        this.maxResolutionWidth = 1024;
         this.maxResolutionHeight = this.maxResolutionWidth;
         this.reducedResolutionWidth = this.maxResolutionWidth;
         this.reducedResolutionHeight = this.maxResolutionHeight;
 
-        this.maxLayers = 255;
-        this.reducedLayers = 255;
+        this.maxLayers =257*8;
+        this.reducedLayers = this.maxLayers;
         this.layers = this.reducedLayers;
 
         
@@ -99,7 +99,12 @@ class ShadowView implements View {
                 layers: gl.getUniformLocation(shadowProgram, "layers"),
                 textureSize: gl.getUniformLocation(shadowProgram, "uTextureSize"),
                 lowValColor: gl.getUniformLocation(shadowProgram, "lowValColor"),
-                highValColor: gl.getUniformLocation(shadowProgram, "highValColor")
+                highValColor: gl.getUniformLocation(shadowProgram, "highValColor"),
+                shadow: gl.getUniformLocation(shadowProgram, "softness"),
+                elevation: gl.getUniformLocation(shadowProgram, "elevation"),
+                azimuth: gl.getUniformLocation(shadowProgram, "azimuth"),
+                rotation: gl.getUniformLocation(shadowProgram, "rotation"),
+                scaleVec: gl.getUniformLocation(shadowProgram, "uScaleVec"),
             }
         }
         
@@ -159,11 +164,23 @@ class ShadowView implements View {
             const eye = camera.position();
             mat4.lookAt(this.modelViewMatrix, eye, this.modelCenter, [0.0, 1.0, 0.0]);
 
+            for(let i = 0; i < this.planeCount; ++i) {
+                const target = this.opacityBuffer[i];
+                target.bindFramebuffer();
+                gl.clearColor(1.0, 0.0, 0.0, 0.0);
+                gl.clearDepth(1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                const colorTarget = this.colorBuffer[i];
+                colorTarget.bindFramebuffer();
+                gl.clearColor(0.0, 0.0, 0.0, 0.0);
+                gl.clearDepth(1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            }
+
             const layers = this.layers;
             for(let i = 0; i < layers; ++i) {
-
                 const bufferIdx = i % this.planeCount;
-                const otherBufferIdx = (i+this.planeCount-1)%this.planeCount;
+                const otherBufferIdx = (i-1)%this.planeCount;
 
                 const target = this.opacityBuffer[bufferIdx];
                 target.bindFramebuffer();
@@ -183,9 +200,9 @@ class ShadowView implements View {
                 gl.useProgram(this.opacityBufferShader.program);
                 
                 if(i > 0) {
-                    gl.activeTexture(gl.TEXTURE0);
+                    gl.activeTexture(gl.TEXTURE3);
                     gl.bindTexture(gl.TEXTURE_2D, this.opacityBuffer[otherBufferIdx].getTexture());
-                    gl.uniform1i(this.opacityBufferShader.uniformLocations.previousOpacityBuffer, 0);
+                    gl.uniform1i(this.opacityBufferShader.uniformLocations.previousOpacityBuffer, 3);
                     
                     gl.activeTexture(gl.TEXTURE2);
                     gl.bindTexture(gl.TEXTURE_2D, this.colorBuffer[otherBufferIdx].getTexture());
@@ -197,12 +214,18 @@ class ShadowView implements View {
                 gl.uniform1i(this.opacityBufferShader.uniformLocations.textureData, 1);
                 
                 gl.uniform3fv(this.opacityBufferShader.uniformLocations.eyePos, eye);
+                gl.uniform3fv(this.opacityBufferShader.uniformLocations.scaleVec, settings.data.scale);
 
                 gl.uniform2f(this.opacityBufferShader.uniformLocations.textureSize, target.getWidth(), target.getHeight());
 
                 gl.uniform1f(this.opacityBufferShader.uniformLocations.offset, i/(layers-1));
                 gl.uniform1i(this.opacityBufferShader.uniformLocations.index, i);
                 gl.uniform1i(this.opacityBufferShader.uniformLocations.layers, layers);
+
+                gl.uniform1f(this.opacityBufferShader.uniformLocations.shadow, settings.shadow());
+                gl.uniform1f(this.opacityBufferShader.uniformLocations.elevation, settings.elevation());
+                gl.uniform1f(this.opacityBufferShader.uniformLocations.azimuth, settings.azimuth());
+                gl.uniform1f(this.opacityBufferShader.uniformLocations.rotation, settings.rotation());
                 
                 const c1 = settings.colorSkin();
                 gl.uniform3f(this.opacityBufferShader.uniformLocations.lowValColor, c1[0], c1[1], c1[2]);
@@ -239,8 +262,8 @@ class ShadowView implements View {
             
             gl.useProgram(this.viewInfo.program);
 
-            const i = Math.round((this.colorBuffer.length-1) * depth);
-            //for(let i = this.opacityBuffer.length-1; i >= 0; --i) 
+            const i = Math.round((this.colorBuffer.length-1));
+            //for(let i = 0; i < this.colorBuffer.length; ++i) 
             {
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, this.colorBuffer[i].getTexture());
@@ -271,16 +294,47 @@ class ShadowView implements View {
                 this.renderMesh.bindShader(gl, this.viewInfo.program);
                 gl.drawElements(gl.TRIANGLES, this.renderMesh.indiceCount(), gl.UNSIGNED_SHORT, 0);
             }
+            for(let i = 0; i < this.colorBuffer.length; ++i) 
+            {
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, this.opacityBuffer[i].getTexture());
+                
+                const transformed = mat4.create();
+                const transformedEye = vec3.create();
+                
+                vec3.transformMat4(transformedEye, eye, this.modelViewMatrix);
+
+                //mat4.targetTo(transformed, vec3.fromValues(0.5, 0.5, 0.5), eye, [0.0, 1.0, 0.0]);
+                const scale = mat4.create();
+                //mat4.scale(scale, scale, vec3.fromValues(2.0, 2.0, 2.0));
+                mat4.scale(scale, scale, vec3.fromValues(0.5,0.5,0.5));
+                mat4.multiply(transformed, transformed, scale);
+                mat4.multiply(transformed, this.modelViewMatrix, transformed);
+                mat4.translate(transformed, transformed, vec3.fromValues(0.5, 0.5, 2.0 * i/(this.colorBuffer.length-1) - 1.0));
+                
+
+                gl.uniformMatrix4fv(
+                    this.viewInfo.uniformLocations.modelViewMatrix,
+                    false,
+                    transformed);
+                gl.uniformMatrix4fv(
+                    this.viewInfo.uniformLocations.projectionMatrix,
+                    false,
+                    this.projectionMatrix);
+                    
+                this.renderMesh.bindShader(gl, this.viewInfo.program);
+                //gl.drawElements(gl.TRIANGLES, this.renderMesh.indiceCount(), gl.UNSIGNED_SHORT, 0);
+            }
         }
     }
 
     getRenderTarget(): RenderTarget {
-        return this.blurringKernel;
+        return this.renderTarget;
     }
 
 
     private updateFps(camera: Camera, settings: Settings): boolean {
-
+        return true;
         const optimalFps = 30;
 
         const newTime = window.performance.now();

@@ -1,17 +1,24 @@
 import setupPicker from "./picker";
 import { vec3 } from "gl-matrix";
+import { VolumeData } from "./shader";
 
 export default class Settings {
     private skinOpacityElem: HTMLInputElement;
+    private elevationElem: HTMLInputElement;
+    private azimuthElem: HTMLInputElement;
+    private rotationElem: HTMLInputElement;
+    private shadowElem: HTMLInputElement;
     private isOrthoElem: HTMLInputElement;
     private pickerSkin: vec3 = [0.0, 0.0, 1.0];
     private pickerBone: vec3 = [0.001, 0.0, 0.0];
     private fpsText: HTMLSpanElement;
     private updated = true;
 
-    public constructor() {
-        const sidebar = document.getElementById("sidebar") as HTMLDivElement;
+    public data: VolumeData;
 
+    public constructor(data: VolumeData) {
+        const sidebar = document.getElementById("sidebar") as HTMLDivElement;
+        this.data = data;
         {
             const div = document.createElement("div");
             this.fpsText = document.createElement("span");
@@ -31,6 +38,54 @@ export default class Settings {
             "slider",
             "skinOpacity"
         );
+
+        const shadow = 0.0;
+        this.shadowElem = createInput(
+            "Shadow",
+            "range",
+            0.0,
+            3.0,
+            shadow,
+            0.001,
+            "slider",
+            "skinOpacity"
+        );
+
+        const elevation = 3.1415/2.0;
+        this.elevationElem = createInput(
+            "Elevation",
+            "range",
+            0.0,
+            3.1415*2.0,
+            elevation,
+            0.001,
+            "slider",
+            "skinOpacity"
+        );
+        
+        const azimuth = 0.0;
+        this.azimuthElem = createInput(
+            "Azimuth",
+            "range",
+            0.0,
+            3.1415*2.0,
+            azimuth,
+            0.001,
+            "slider",
+            "skinOpacity"
+        );
+        const rotation = 3.1415/4.0;
+        this.rotationElem = createInput(
+            "Rotation",
+            "range",
+            0.0,
+            3.1415*2.0,
+            rotation,
+            0.001,
+            "slider",
+            "skinOpacity"
+        );
+
         this.skinOpacityElem.oninput = (): void => {this.updated = true;}
 
         this.isOrthoElem = createInput(
@@ -71,6 +126,26 @@ export default class Settings {
 
     public skinOpacity(): number {
         const v = parseFloat(this.skinOpacityElem.value);
+        return v;
+    }
+
+    public shadow(): number {
+        const v = parseFloat(this.shadowElem.value);
+        return v;
+    }
+
+    public elevation(): number {
+        const v = parseFloat(this.elevationElem.value);
+        return v;
+    }
+
+    public azimuth(): number {
+        const v = parseFloat(this.azimuthElem.value);
+        return v;
+    }
+
+    public rotation(): number {
+        const v = parseFloat(this.rotationElem.value);
         return v;
     }
 
