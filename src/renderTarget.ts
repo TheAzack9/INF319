@@ -38,9 +38,9 @@ export default class RenderTarget {
                 width, height, 0,
                 gl.RGBA, gl.FLOAT, null);
         } else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F,
                 width, height, 0,
-                gl.RGBA, gl.UNSIGNED_BYTE, null);
+                gl.RGBA, gl.FLOAT, null);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         }
     
@@ -62,6 +62,8 @@ export default class RenderTarget {
         const attachmentPoint = gl.COLOR_ATTACHMENT0;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, this.targetTexture, 0);
 
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        console.log(`can ${status === gl.FRAMEBUFFER_COMPLETE ? "" : "NOT "}render to R32`);
         //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthTexture, 0);
     }
 

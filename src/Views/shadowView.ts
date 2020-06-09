@@ -1,7 +1,7 @@
 import View from '../view';
 import RenderTarget from '../renderTarget';
 import Settings from '../settings';
-import { mat4, vec3, vec4, mat3 } from 'gl-matrix';
+import { mat4, vec3, vec4, mat3, vec2 } from 'gl-matrix';
 import Camera from '../camera';
 import Mesh from '../mesh';
 import createCubeMesh from '../cubeMesh';
@@ -24,7 +24,7 @@ class ShadowView implements View {
 
     private renderTarget: RenderTarget;
 
-    private readonly planeCount = 257;
+    private readonly planeCount = 10;
     private opacityBuffer: RenderTarget[];
     private colorBuffer: RenderTarget[];
     private renderMesh: Mesh;
@@ -58,7 +58,7 @@ class ShadowView implements View {
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
 
-        this.maxResolutionWidth = 1024;
+        this.maxResolutionWidth = 512;
         this.maxResolutionHeight = this.maxResolutionWidth;
         this.reducedResolutionWidth = this.maxResolutionWidth;
         this.reducedResolutionHeight = this.maxResolutionHeight;
@@ -100,10 +100,9 @@ class ShadowView implements View {
                 textureSize: gl.getUniformLocation(shadowProgram, "uTextureSize"),
                 lowValColor: gl.getUniformLocation(shadowProgram, "lowValColor"),
                 highValColor: gl.getUniformLocation(shadowProgram, "highValColor"),
-                shadow: gl.getUniformLocation(shadowProgram, "softness"),
-                elevation: gl.getUniformLocation(shadowProgram, "elevation"),
-                azimuth: gl.getUniformLocation(shadowProgram, "azimuth"),
-                rotation: gl.getUniformLocation(shadowProgram, "rotation"),
+                center: gl.getUniformLocation(shadowProgram, "center"),
+                scale: gl.getUniformLocation(shadowProgram, "scale"),
+                axes: gl.getUniformLocation(shadowProgram, "axes"),
                 scaleVec: gl.getUniformLocation(shadowProgram, "uScaleVec"),
             }
         }
@@ -167,7 +166,7 @@ class ShadowView implements View {
             for(let i = 0; i < this.planeCount; ++i) {
                 const target = this.opacityBuffer[i];
                 target.bindFramebuffer();
-                gl.clearColor(1.0, 0.0, 0.0, 0.0);
+                gl.clearColor(0.0, 0.0, 0.0, 0.0);
                 gl.clearDepth(1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                 const colorTarget = this.colorBuffer[i];
@@ -222,10 +221,38 @@ class ShadowView implements View {
                 gl.uniform1i(this.opacityBufferShader.uniformLocations.index, i);
                 gl.uniform1i(this.opacityBufferShader.uniformLocations.layers, layers);
 
-                gl.uniform1f(this.opacityBufferShader.uniformLocations.shadow, settings.shadow());
-                gl.uniform1f(this.opacityBufferShader.uniformLocations.elevation, settings.elevation());
-                gl.uniform1f(this.opacityBufferShader.uniformLocations.azimuth, settings.azimuth());
-                gl.uniform1f(this.opacityBufferShader.uniformLocations.rotation, settings.rotation());
+                const zDistance = 1.0/layers;
+                const softness = settings.shadow();
+                const elevation = settings.elevation();
+                const azimuth = settings.azimuth();
+                const rotation = settings.rotation();
+
+                // Set axis parameters
+                const ratioXY = 0.5;
+                const a = ratioXY;
+                const b = 1.0 - ratioXY;
+
+                const fVarX = a * softness;
+                const fVarY = b * softness;
+
+                const fElev = Math.PI - (elevation + Math.PI/2.0);
+
+                const fZ = Math.sin(fElev);
+                const fHyp = Math.cos(fElev);
+                const fY = fHyp * Math.cos(azimuth);
+                const fX = fHyp * Math.sin(azimuth);
+                
+                const fdX = (fX/fZ);
+                const fdY = (fY / fZ);
+
+                // No perspective
+
+                const center = vec2.fromValues(fdX * zDistance, fdY * zDistance);
+                const scale = vec2.fromValues(fVarX * Math.sqrt(zDistance), fVarY * Math.sqrt(zDistance));
+                const axes = vec2.fromValues(Math.sin(rotation), Math.cos(rotation));
+                gl.uniform2fv(this.opacityBufferShader.uniformLocations.center, center);
+                gl.uniform2fv(this.opacityBufferShader.uniformLocations.scale, scale);
+                gl.uniform2fv(this.opacityBufferShader.uniformLocations.axes, axes);
                 
                 const c1 = settings.colorSkin();
                 gl.uniform3f(this.opacityBufferShader.uniformLocations.lowValColor, c1[0], c1[1], c1[2]);
@@ -262,7 +289,7 @@ class ShadowView implements View {
             
             gl.useProgram(this.viewInfo.program);
 
-            const i = Math.round((this.colorBuffer.length-1));
+            const i = Math.round((this.colorBuffer.length-1)* depth);
             //for(let i = 0; i < this.colorBuffer.length; ++i) 
             {
                 gl.activeTexture(gl.TEXTURE0);

@@ -27,7 +27,7 @@ export default class Settings {
             sidebar.appendChild(div);
         }
 
-        const defaultSkinOpacity = 0.3;
+        const defaultSkinOpacity = 1.0;
         this.skinOpacityElem = createInput(
             "Skin Opacity",
             "range",
@@ -44,19 +44,19 @@ export default class Settings {
             "Shadow",
             "range",
             0.0,
-            3.0,
+            1.0,
             shadow,
             0.001,
             "slider",
             "skinOpacity"
         );
 
-        const elevation = 3.1415/2.0;
+        const elevation = 0;
         this.elevationElem = createInput(
             "Elevation",
             "range",
             0.0,
-            3.1415*2.0,
+            3.1415,
             elevation,
             0.001,
             "slider",

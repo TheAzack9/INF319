@@ -27,10 +27,9 @@ uniform vec2 uTextureSize;
 uniform vec3 lowValColor;
 uniform vec3 highValColor;
 
-uniform float softness;
-uniform float elevation;
-uniform float azimuth;
-uniform float rotation;
+uniform vec2 center;
+uniform vec2 scale;
+uniform vec2 axes;
 
 const float lightAngle = 3.1415/2.0*0.0;
 const float PI = 3.14159265359;
@@ -86,41 +85,20 @@ void main() {
         occlusionColor.r = (c + (u+d+l+r)) / 5.0 - zDistance;*/
 
 
-    const float ratioXY = 0.5;
-    const float a = ratioXY;
-    const float b = 1.0 - ratioXY;
 
-    float fVarX = a * softness;
-    float fVarY = b * softness;
-
-    float fZ = sin(elevation);
-    float fHyp = cos(elevation);
-    float fY = fHyp * cos(azimuth);
-    float fX = fHyp * sin(azimuth);
-    
-    float fdX = (fX/fZ);
-    float fdY = (fY / fZ);
-
-    // No perspective
-
-    vec2 center = vec2(fdX * zDistance, fdY * zDistance);
-    vec2 scale = vec2(fVarX * sqrt(zDistance), fVarY * sqrt(zDistance));
-    vec2 axes = vec2(sin(rotation), cos(rotation));
-
-    float theta = acos(axes.x);
     float sum = 0.0;
-    float fRand = rand(gl_FragCoord.x * 437985.0 + gl_FragCoord.y * 2713.0 + gl_FragCoord.z * 98475.0);
+    float fRand = rand(gl_FragCoord.x * 437.0 + gl_FragCoord.y * 27313.0 + gl_FragCoord.z * 984785.0);
     
     const int LIGHT_SAMPLES = 3;
     for(int i = 0; i < LIGHT_SAMPLES; ++i) {
-        float fT = fRand * 2.0 * PI + (PI * float(uIndex%LIGHT_SAMPLES) / float(LIGHT_SAMPLES)) + 2.0 * PI * (float(i) / float(LIGHT_SAMPLES));
+        float fT = abs(fRand)  * 2.0 * PI + (PI * float(uIndex%LIGHT_SAMPLES) / float(LIGHT_SAMPLES)) + 2.0 * PI * (float(i) / float(LIGHT_SAMPLES));
         vec2 vecT = vec2(cos(fT), sin(fT));
 
         vec2 vecSample = vec2(1.0, 0.0);
         vecSample = vecSample.xx * vec2(1.0, 1.0) * vecT.xy + vecSample.yy * vec2(-1.0, 1.0) * vecT.yx;
         vecSample *= scale;
 
-        vec2 vecLightSampleOffset = vecSample.xx * vec2(1.0, 1.0) * axes.xy + vecSample.yy * vec2(-1.0, 1.0) * axes.yx;
+        vec2 vecLightSampleOffset = vecSample.xx * vec2(1.0, 1.0) * axes.xy + vecSample.yy * vec2(1.0, 1.0) * axes.yx;
         vec2 vecLightSamplePoint = center.xy + vecLightSampleOffset.xy;
 
         vec4 lookup = vec4(properTexCoord * vec2(2.0) - vec2(1.0), 0.0, 1.0);
@@ -136,11 +114,16 @@ void main() {
     sum /= float(LIGHT_SAMPLES);
     opacity = sum;
         vec4 lookupColor = texture(previousOpacityBuffer, properTexCoord);
-        occlusionColor.r = opacity * (1.0 - theColor.a);
+        occlusionColor.r = max(min(opacity + theColor.a, 1.0 ), 0.0);
        // occlusionColor.r = opacity + (1.0 - theColor.a);
         
-    if(uIndex == layers-1 || dir.y <= 0.01) {
-        theColor = vec4(1.0, 0.0, 0.0, 1.0);
+    if(val_color.a >= 0.95) {
+        color = val_color;
+        return;
+    }
+
+    if(uIndex == layers-10) {
+        theColor = vec4(1.0, 0.0, 1.0, 1.0);
     }
         /*opacity = 1.0 - (1.0 - opacity) * 0.7;
         //occlusionColor.rgb = layerPos;
@@ -168,9 +151,15 @@ void main() {
 
     //float opacity = occlusionColor.r;
     //float alpha = opacity.r;
-    float alpha = 1.0 - val_color.a;
-    color.rgb = (alpha * opacity * theColor.rgb + (val_color.rgb * (1.0 - alpha)));
-    color.a = val_color.a + theColor.a;
+    /*float alpha = 1.0 - val_color.a;
+    color.rgb = (theColor.a * (1.0 - (1.0 - lookupColor.r) * 0.999) * theColor.rgb + (val_color.rgb * (1.0 - theColor.a)));
+    color.a = val_color.a + theColor.a;*/
+
+
+            //color.rgb += (1.0 - color.a) * (val_color.a * val_color.rgb);
+            //color.a += (1.0 - color.a) * val_color.a;
+    color.rgb = (val_color.rgb + (1.0 - val_color.a) * (theColor.a * theColor.rgb) * (1.0 - lookupColor.r));
+    color.a = val_color.a + (1.0 - val_color.a) * theColor.a;
     //color.rgb = vec3(opacity);
 
 }
