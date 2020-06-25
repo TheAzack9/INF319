@@ -13,6 +13,8 @@ import MinimapView from "./Views/minimapView";
 import { mat4, vec3 } from "gl-matrix";
 import RayCasterController from "./rayCaster";
 
+import ShadowView from "./views/shadowView";
+
 async function Init(): Promise<void> {
     const canvas = document.querySelector("#theCanvas") as HTMLCanvasElement;
 
@@ -24,31 +26,36 @@ async function Init(): Promise<void> {
         alert("Unable to initialize WebGL. Your browser or machine may not support it.");
         return;
     }
+    
+    gl.getExtension('EXT_color_buffer_float');
+    gl.getExtension('EXT_float_blend');
+    gl.getExtension('OES_texture_float_linear');
 
     let loadedData = await bindTexture("./data/hand.dat", "./data/hand.ini", gl);
     
     const settings = new Settings(loadedData);
     const sidebar = document.getElementById("sidebar") as HTMLDivElement;
     const transferFunction = new TransferFunctionController(sidebar, settings);
-    const renderView = new MainView(gl, transferFunction);
-    const renderSlice = new SliceView(gl, renderView.getRenderTarget(), settings);
+    //const renderView = new MainView(gl, transferFunction);
+    //const renderSlice = new SliceView(gl, renderView.getRenderTarget(), settings);
     const camera = new Camera([0.5, 0.5, 0.5], document.getElementById("theCanvas") as HTMLCanvasElement);
     const view = createSquareMesh(-1.0, 1.0);
     const rayCasterController = new RayCasterController(loadedData, sidebar, settings, camera);
 
-    const minimap = new MinimapView(gl, transferFunction);
-
+    //const minimap = new MinimapView(gl, transferFunction);
     const viewProgram = initShaderProgram(gl, viewVert, viewFrag);
     const viewInfo = {
         program: viewProgram,
         uniformLocations: {
-            transform: gl.getUniformLocation(viewProgram, "uTransform")
+            transform: gl.getUniformLocation(viewProgram.program, "uTransform")
         },
     };
 
     let forceUpdate = false;
     let file = settings.getFile();
     let newFile = file;
+
+    const shadowView = new ShadowView(gl, transferFunction);
 
     // eslint-disable-next-line no-constant-condition
     const renderLoop = (): void => {
@@ -60,24 +67,25 @@ async function Init(): Promise<void> {
 
         
         const settingsUpdated = settings.isUpdated() || transferFunction.transferFunctionUpdated;
-        const sliceUpdated = renderSlice.textureUpdated;
-        const newFrame = renderView.updateFps(camera, settings, settingsUpdated);
+        //const sliceUpdated = renderSlice.textureUpdated;
+        //const newFrame = renderView.updateFps(camera, settings, settingsUpdated);
         const aspect = canvas.clientWidth / canvas.clientHeight;
         rayCasterController.aspect = aspect;
 
-        if (newFrame || settingsUpdated || sliceUpdated || forceUpdate) {
+        //if (/*newFrame || */settingsUpdated || /*sliceUpdated ||*/ forceUpdate) {
             forceUpdate = false;
-            renderView.getRenderTarget().bindFramebuffer();
+            //renderView.getRenderTarget().bindFramebuffer();
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clearDepth(1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            renderSlice.render(aspect, camera, settings, loadedData);
-            renderView.render(aspect, camera, settings, loadedData);
-            minimap.setViewAspectRatio(aspect);
+            //renderSlice.render(aspect, camera, settings, loadedData);
+            //renderView.render(aspect, camera, settings, loadedData);
+            /*minimap.setViewAspectRatio(aspect);
             minimap.getRenderTarget().bindFramebuffer();
-            minimap.render(1.0, camera, settings, loadedData);
-        }
+            minimap.render(1.0, camera, settings, loadedData);*/
+            shadowView.render(aspect, camera, settings, loadedData);
+        //}
 
         //test = false;
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -87,11 +95,11 @@ async function Init(): Promise<void> {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.disable(gl.DEPTH_TEST);
 
-        gl.useProgram(viewInfo.program);
+        gl.useProgram(viewInfo.program.program);
         // render the cube with the texture we just rendered to
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, renderView.getRenderTarget().getTexture());
-
+        //gl.bindTexture(gl.TEXTURE_2D, renderView.getRenderTarget().getTexture());
+        gl.bindTexture(gl.TEXTURE_2D, shadowView.getRenderTarget().getTexture());
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clearColor(0, 0, 0, 1);   
         
@@ -100,12 +108,12 @@ async function Init(): Promise<void> {
             false,
             mat4.create());// clear to white
 
-        view.bindShader(gl, viewInfo.program);
+        view.bindShader(gl, viewInfo.program.program);
         gl.drawElements(gl.TRIANGLES, view.indiceCount(), gl.UNSIGNED_SHORT, 0.0);
 
 
-        gl.bindTexture(gl.TEXTURE_2D, minimap.getRenderTarget().getTexture());
-        gl.viewport(0, 0, gl.canvas.width / aspect, gl.canvas.height);
+        //gl.bindTexture(gl.TEXTURE_2D, minimap.getRenderTarget().getTexture());
+        //gl.viewport(0, 0, gl.canvas.width / aspect, gl.canvas.height);
 
         const minimapTransform = mat4.create();
         mat4.translate(minimapTransform, minimapTransform, vec3.fromValues(-0.8, 0.8, 0.0));
@@ -117,7 +125,7 @@ async function Init(): Promise<void> {
         gl.drawElements(gl.TRIANGLES, view.indiceCount(), gl.UNSIGNED_SHORT, 0.0);
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.bindTexture(gl.TEXTURE_2D, renderSlice.getRenderTarget().getTexture());
+        //gl.bindTexture(gl.TEXTURE_2D, renderSlice.getRenderTarget().getTexture());
         gl.uniformMatrix4fv(
             viewInfo.uniformLocations.transform,
             false,
@@ -138,7 +146,7 @@ async function Init(): Promise<void> {
             loadedData = await bindTexture(file + ".dat", file + ".ini", gl);
             settings.setLoadedData(loadedData);
             
-            renderSlice.recalculate();
+            //renderSlice.recalculate();
             transferFunction.recalculate();
             forceUpdate = true;
         }

@@ -410,6 +410,12 @@ export default class Settings {
                 {value: "./data/wholebody-128x128x389", text: "Body (Lower quality)"},
                 {value: "./data/sinusveins-256x256x166", text: "Sinus (Lower quality)"}
             ]),
+
+            shadow: new SliderSetting(sidebar, "Shadow", 0.0, 0.0, 1.0, 0.001, "shadow", "shadow"),
+            elevation: new SliderSetting(sidebar, "Elevation", 0.0, 0.0, 3.1415, 0.001, "elevation", "elevation"),
+            azimuth: new SliderSetting(sidebar, "Azimuth", 0.0, 0.0, 3.1415*2.0, 0.001, "azimuth", "azimuth"),
+            rotation: new SliderSetting(sidebar, "Rotation", 3.1415, 0.0, 3.1415*2.0, 0.001, "rotation", "rotation"),
+
             showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),
             isOrthoElem: new CheckboxSetting(sidebar, "Orthographic Camera", false, "orthographic-camera", "checkbox"),
             defaultColor: new ColorSelectSetting(sidebar, "Default color", "#FFE0BDFF", "defaultColor", "color-picker"),
@@ -424,7 +430,7 @@ export default class Settings {
                 {value: "1", text: "3D View only"},
                 {value: "2", text: "Quad view"}
             ]),
-            light: new LightSetting(sidebar, "Light position"),
+            //light: new LightSetting(sidebar, "Light position"),
             showCuttingPlane: new CheckboxSetting(sidebar, "Show cuttingplane", false, "cuttingplane", "checkbox"),
             cuttingPosition: new Vec3Setting(sidebar, "Cuttingplane position", false),
             cuttingNormal: new Vec3Setting(sidebar, "Cuttingplane normal", true),
@@ -467,6 +473,22 @@ export default class Settings {
 
     public lightDistance(): number {
         return this.settings["lightDistance"].value();
+    }
+
+    public shadow(): number {
+        return this.settings["shadow"].value();
+    }
+
+    public elevation(): number {
+        return this.settings["elevation"].value();
+    }
+
+    public azimuth(): number {
+        return this.settings["azimuth"].value();
+    }
+
+    public rotation(): number {
+        return this.settings["rotation"].value();
     }
 
     public showCuttingplane(): boolean {

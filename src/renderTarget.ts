@@ -1,6 +1,7 @@
 export default class RenderTarget {
 
     private targetTexture: WebGLTexture;
+    private shadowBufferTexture: WebGLTexture | null = null;
     private depthTexture: WebGLTexture;
     private frameBuffer: WebGLFramebuffer;
     private gl: WebGL2RenderingContext;
@@ -8,7 +9,7 @@ export default class RenderTarget {
     private width: number;
     private height: number;
 
-    public constructor(gl: WebGL2RenderingContext, width: number, height: number) {
+    public constructor(gl: WebGL2RenderingContext, width: number, height: number, shadowBuffer = false) {
         const tex = gl.createTexture();
         if(tex == null) {
             throw "Failed to create texture for render target";
@@ -32,9 +33,9 @@ export default class RenderTarget {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F,
             width, height, 0,
-            gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.RGBA, gl.FLOAT, null);
     
         // Create the depth buffer
         const dB = gl.createTexture();
@@ -51,9 +52,28 @@ export default class RenderTarget {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     
+        if(shadowBuffer) {
+            const shadowTex = gl.createTexture();
+            this.shadowBufferTexture = shadowTex;
+                
+            gl.bindTexture(gl.TEXTURE_2D, this.shadowBufferTexture);
+        
+            // set the filtering so we don't need mips
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F,
+                width, height, 0,
+                gl.RGBA, gl.FLOAT, null);
+        }
+
         const attachmentPoint = gl.COLOR_ATTACHMENT0;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, this.targetTexture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.shadowBufferTexture, 0);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthTexture, 0);
+
+        
     }
 
     public resize(width: number, height: number): void {
@@ -80,6 +100,10 @@ export default class RenderTarget {
 
     public getTexture(): WebGLTexture {
         return this.targetTexture;
+    }
+    
+    public getShadowTexture(): WebGLTexture | null {
+        return this.shadowBufferTexture;
     }
 
     public getDepthTexture(): WebGLTexture {

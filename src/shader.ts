@@ -1,7 +1,52 @@
 import makeRequest from "./util";
 import { isNullOrUndefined } from "util";
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3, vec2 } from "gl-matrix";
 import {parse} from "ini";
+
+export class Shader {
+    private gl: WebGL2RenderingContext;
+    public program: WebGLProgram;
+
+    public constructor(gl: WebGL2RenderingContext, program: WebGLProgram) {
+        this.gl = gl;
+        this.program = program;
+    }
+
+    public bind(): void {
+        this.gl.useProgram(this.program);
+    }
+
+    public bindTexture2D(uniformLocation: string, index: number, texture: WebGLTexture) {
+        this.gl.activeTexture(this.gl.TEXTURE0 + index);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        this.bindUniform1i(uniformLocation, index);
+    }
+
+    public getUniformLocation(location: string): WebGLUniformLocation | null {
+        const locationPos = this.gl.getUniformLocation(this.program, location);
+        return locationPos;
+    }
+
+    public bindUniform1i(location: string, index: number) {
+        const uniformLocation = this.getUniformLocation(location);
+        this.gl.uniform1i(uniformLocation, index);
+    }
+
+    public bindVec3(location: string, vec: vec3) {
+        const uniformLocation = this.getUniformLocation(location);
+        this.gl.uniform3fv(uniformLocation, vec);
+    }
+    
+    public bindVec2(location: string, vec: vec2) {
+        const uniformLocation = this.getUniformLocation(location);
+        this.gl.uniform2fv(uniformLocation, vec);
+    }
+
+    public bindFloat(location: string, float: number): void {
+        const uniformLocation = this.getUniformLocation(location);
+        this.gl.uniform1f(uniformLocation, float);
+    }
+}
 
 /**
  * Initialize a shader program, so WebGL knows how to draw our data.
@@ -10,7 +55,7 @@ export function initShaderProgram(
     gl: WebGL2RenderingContext,
     vsSource: string,
     fsSource: string,
-): WebGLProgram {
+): Shader {
     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource) as WebGLShader;
     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource) as WebGLShader;
 
@@ -29,7 +74,7 @@ export function initShaderProgram(
         throw error;
     }
 
-    return shaderProgram;
+    return new Shader(gl, shaderProgram);
 }
 
 /**
