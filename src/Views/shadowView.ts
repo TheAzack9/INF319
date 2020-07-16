@@ -15,7 +15,7 @@ export default class ShadowView implements View {
 
     private targets = 2;
     private renderTargets: RenderTarget[];
-    private layers = 259;
+    private layers = 259*4;
 
     private projectionMatrix: mat4 = mat4.create();
     private modelViewMatrix: mat4 = mat4.create();
@@ -35,7 +35,7 @@ export default class ShadowView implements View {
         this.transferFunction = transferFunction;
         this.renderTargets = [];
         for(let i = 0; i < this.targets; ++i) {
-            this.renderTargets.push(new RenderTarget(gl, 512, 512, true));
+            this.renderTargets.push(new RenderTarget(gl, 768, 768, true));
         }
         this.presentedTarget = this.renderTargets[0];
         this.shadowBufferShader = initShaderProgram(gl, vert, frag);
@@ -114,7 +114,8 @@ export default class ShadowView implements View {
             const rotation = settings.rotation();
 
             // Set axis parameters
-            const ratioXY = 0.5;
+            const ratioXY = settings.ratioXY();
+
             const a = ratioXY;
             const b = 1.0 - ratioXY;
 

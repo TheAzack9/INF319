@@ -411,6 +411,7 @@ export default class Settings {
                 {value: "./data/sinusveins-256x256x166", text: "Sinus (Lower quality)"}
             ]),
 
+            ratioxy: new SliderSetting(sidebar, "RatioXY", 0.5, 0.0, 1.0, 0.001, "ratioxy", "ratioxy"),
             shadow: new SliderSetting(sidebar, "Shadow", 0.0, 0.0, 1.0, 0.001, "shadow", "shadow"),
             elevation: new SliderSetting(sidebar, "Elevation", 0.0, 0.0, 3.1415, 0.001, "elevation", "elevation"),
             azimuth: new SliderSetting(sidebar, "Azimuth", 0.0, 0.0, 3.1415*2.0, 0.001, "azimuth", "azimuth"),
@@ -473,6 +474,11 @@ export default class Settings {
 
     public lightDistance(): number {
         return this.settings["lightDistance"].value();
+    }
+
+    public ratioXY(): number {
+        const theValue =this.settings["ratioxy"].value();
+        return theValue;
     }
 
     public shadow(): number {

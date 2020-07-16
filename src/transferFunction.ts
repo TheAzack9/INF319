@@ -33,6 +33,9 @@ export default class TransferFunctionController {
             const i = Math.floor(v * (buckets - 1));
             this.histogramData[i] += 1;
         });
+        for(let i = 0; i < this.buckets; ++i) {
+            this.histogramData[i] = Math.log(this.histogramData[i]);
+        }
 
         const div = document.createElement("div");
         div.classList.add("transfer-function");
@@ -52,7 +55,7 @@ export default class TransferFunctionController {
         this.canvas.onmouseleave = this.onMouseLeave.bind(this);
 
         const air = new Color(255, 255, 255);
-        const skin = new Color(255, 224, 189);
+        const skin = new Color(255, 205, 148);
         const vessel = new Color(200, 0, 0);
         const bone = new Color(254, 254, 254);
         this.transferFunction = new TransferFunction([
@@ -75,6 +78,9 @@ export default class TransferFunctionController {
             const i = Math.floor(v * (this.buckets - 1));
             this.histogramData[i] += 1;
         });
+        for(let i = 0; i < this.buckets; ++i) {
+            this.histogramData[i] = Math.log(this.histogramData[i]);
+        }
         this.draw();
     }
 

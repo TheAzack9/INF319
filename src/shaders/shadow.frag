@@ -59,7 +59,7 @@ float calculateShadowScattering() {
         lookup.xy *= 0.5;
 
         vec4 lookupColor = texture(uPreviousShadowBuffer, lookup.xy);
-        sum += lookupColor.a;
+        sum += lookupColor.r;
     }
     return sum / float(3);
 }
@@ -69,24 +69,29 @@ void main() {
     if(texCoord.x > 1.0 || texCoord.x < 0.0 || texCoord.y > 1.0 || texCoord.y < 0.0 || texCoord.z > 1.0 || texCoord.z < 0.0) weight = 0.0;
     vec4 prevColor = texture(uPreviousBuffer, properTexCoord);
     vec4 prevShadowColor = texture(uPreviousShadowBuffer, properTexCoord);
-    if(prevColor.a >= 0.95) {
-        color = prevColor;
-        shadowColor = prevShadowColor;
-        return;
+    float prevShadowWeight = prevShadowColor.r;
+    float prevMax = prevShadowColor.g;
+
+    float midaDelta = 1.0;
+    float midaShadowDelta = 0.0;
+    if(weight > prevMax) {
+        midaDelta = 1.0 - (weight - prevMax);
+        midaShadowDelta = (weight - prevMax);
     }
+
 
     vec4 transferColor = texture(uTransferFunction, vec2(weight, 0.5));
     //vec4 transferColor = vec4(weight);
-
+    transferColor.a /= 4.0;
 
     color = prevColor;
 
     float scatterAverage = calculateShadowScattering();
-    vec4 shadowResult = clamp(vec4(transferColor.a + scatterAverage), vec4(0.0), vec4(1.0));
-    shadowColor = shadowResult;
+    float shadowResult = clamp(transferColor.a + scatterAverage - midaShadowDelta, 0.0, 1.0);
+    shadowColor = vec4(shadowResult, max(prevMax, weight), 0.0, 0.0);
 
-    color.rgb += (1.0 - color.a) * (transferColor.a * transferColor.rgb * (1.0 - prevShadowColor.a));
-    color.a += (1.0 - color.a) * transferColor.a;
+    color.rgb = midaDelta * color.rgb + (1.0 - midaDelta * color.a) * (transferColor.a * transferColor.rgb  * (1.0 - prevShadowWeight));
+    color.a = midaDelta * color.a + (1.0 - midaDelta * color.a) * transferColor.a;
     
     
 
