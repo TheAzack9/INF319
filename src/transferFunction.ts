@@ -61,7 +61,7 @@ export default class TransferFunctionController {
         this.transferFunction = new TransferFunction([
             [0, 0, air],
             [0.3, 0, air],
-            [0.3, 0.2, skin],
+            [0.3, 1.0, skin],
             [0.4, 0.2, skin],
             [0.47, 0.5, vessel],
             [0.47, 1, bone],

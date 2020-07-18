@@ -76,7 +76,7 @@ void main() {
     float midaShadowDelta = 0.0;
     if(weight > prevMax) {
         midaDelta = 1.0 - (weight - prevMax);
-        midaShadowDelta = (weight - prevMax);
+        midaShadowDelta = (weight - prevMax) * 8.0;
     }
 
 
