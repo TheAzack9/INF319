@@ -100,7 +100,13 @@ async function Init(): Promise<void> {
         gl.activeTexture(gl.TEXTURE0);
         //gl.bindTexture(gl.TEXTURE_2D, renderView.getRenderTarget().getTexture());
         gl.bindTexture(gl.TEXTURE_2D, shadowView.getRenderTarget().getTexture());
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+        if(aspect > 1.0) {
+            gl.viewport((1.0 - 1.0 / aspect) * gl.canvas.width / 2.0, 0, gl.canvas.width / aspect, gl.canvas.height);
+            
+        } else {
+            gl.viewport(0, (1.0 - 1.0 * aspect) * gl.canvas.height / 2.0, gl.canvas.width, gl.canvas.height * aspect);
+        }
         gl.clearColor(0, 0, 0, 1);   
         
         gl.uniformMatrix4fv(
@@ -108,10 +114,11 @@ async function Init(): Promise<void> {
             false,
             mat4.create());// clear to white
 
-        view.bindShader(gl, viewInfo.program.program);
-        gl.drawElements(gl.TRIANGLES, view.indiceCount(), gl.UNSIGNED_SHORT, 0.0);
-
-
+            view.bindShader(gl, viewInfo.program.program);
+            gl.drawElements(gl.TRIANGLES, view.indiceCount(), gl.UNSIGNED_SHORT, 0.0);
+            
+        gl.viewport(0.0, 0, gl.canvas.width / aspect, gl.canvas.height);
+            
         //gl.bindTexture(gl.TEXTURE_2D, minimap.getRenderTarget().getTexture());
         //gl.viewport(0, 0, gl.canvas.width / aspect, gl.canvas.height);
 
@@ -126,11 +133,6 @@ async function Init(): Promise<void> {
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         //gl.bindTexture(gl.TEXTURE_2D, renderSlice.getRenderTarget().getTexture());
-        gl.uniformMatrix4fv(
-            viewInfo.uniformLocations.transform,
-            false,
-            mat4.create());// clear to white
-        gl.drawElements(gl.TRIANGLES, view.indiceCount(), gl.UNSIGNED_SHORT, 0.0);
         
         gl.bindTexture(gl.TEXTURE_2D, null);
         gl.enable(gl.DEPTH_TEST);

@@ -20,7 +20,7 @@ export default class Camera {
 
     private onChange?: (updatedMatrix: mat4) => void;
 
-    private zoomDistance = 0.0;
+    private zoomDistance = 1.0;
 
     private additionalTransform = mat4.create();
 
