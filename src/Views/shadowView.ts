@@ -35,7 +35,7 @@ export default class ShadowView implements View {
         this.transferFunction = transferFunction;
         this.renderTargets = [];
         for(let i = 0; i < this.targets; ++i) {
-            this.renderTargets.push(new RenderTarget(gl, 256, 256, true));
+            this.renderTargets.push(new RenderTarget(gl, 1024, 1024, true));
         }
         this.presentedTarget = this.renderTargets[0];
         this.shadowBufferShader = initShaderProgram(gl, vert, frag);

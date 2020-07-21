@@ -72,11 +72,13 @@ void main() {
     float prevShadowWeight = prevShadowColor.r;
     float prevMax = prevShadowColor.g;
 
+    float prevColorLen = 1.0 - length(prevColor.rgb) / sqrt(2.0);
+
     float midaDelta = 1.0;
     float midaShadowDelta = 0.0;
     if(weight > prevMax) {
-        midaDelta = 1.0 - (weight - prevMax);
-        midaShadowDelta = (weight - prevMax) * 8.0;
+        midaDelta = clamp((1.0 - (weight - prevMax) *2.0 * (1.0-prevColorLen)), 0.0, 1.0);
+        midaShadowDelta = clamp((weight-prevMax)*8.0, 0.0, 1.0);
     }
 
 
