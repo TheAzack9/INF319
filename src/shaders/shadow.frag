@@ -24,6 +24,10 @@ uniform vec2 axes;
 uniform int uIndex;
 uniform float uOffset;
 
+uniform float uMidaFactor;
+uniform float uMidaShadowFactor;
+uniform int uMidaMethod;
+
 const float PI = 3.14159265359;
 
 float rand(float n){return fract(sin(n) * 43758.5453123);}
@@ -64,6 +68,14 @@ float calculateShadowScattering() {
     return sum / float(3);
 }
 
+//https://github.com/CesiumGS/cesium/blob/master/Source/Shaders/Builtin/Functions/luminance.glsl
+float czm_luminance(vec3 rgb)
+{
+    // Algorithm from Chapter 10 of Graphics Shaders.
+    const vec3 W = vec3(0.2125, 0.7154, 0.0721);
+    return dot(rgb, W);
+}
+
 void main() {
     float weight = texture(uData, texCoord ).r;
     if(texCoord.x > 1.0 || texCoord.x < 0.0 || texCoord.y > 1.0 || texCoord.y < 0.0 || texCoord.z > 1.0 || texCoord.z < 0.0) weight = 0.0;
@@ -72,13 +84,31 @@ void main() {
     float prevShadowWeight = prevShadowColor.r;
     float prevMax = prevShadowColor.g;
 
-    float prevColorLen = 1.0 - length(prevColor.rgb) / sqrt(2.0);
+    float luminance = czm_luminance(prevColor.rgb);
 
     float midaDelta = 1.0;
     float midaShadowDelta = 0.0;
     if(weight > prevMax) {
-        midaDelta = clamp((1.0 - (weight - prevMax) *2.0 * (1.0-prevColorLen)), 0.0, 1.0);
-        midaShadowDelta = clamp((weight-prevMax)*8.0, 0.0, 1.0);
+
+        if(uMidaMethod == 0) {
+            midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
+            midaShadowDelta = (weight-prevMax)*uMidaShadowFactor;
+        }
+        else if(uMidaMethod == 1) {
+            midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
+            midaShadowDelta = (weight-prevMax)*uMidaShadowFactor;
+        }
+        else if(uMidaMethod == 2) {
+            // midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
+            // midaShadowDelta = (weight-prevMax)*uMidaShadowFactor * (luminance);
+            
+            midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
+            midaShadowDelta = (weight-prevMax)*(uMidaShadowFactor * uMidaFactor);
+        }
+        else if(uMidaMethod == 3) {
+            midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
+            midaShadowDelta = (weight-prevMax)*(uMidaShadowFactor + uMidaFactor);
+        }
     }
 
 
@@ -92,7 +122,7 @@ void main() {
     float shadowResult = clamp(transferColor.a + scatterAverage - midaShadowDelta, 0.0, 1.0);
     shadowColor = vec4(shadowResult, max(prevMax, weight), 0.0, 0.0);
 
-    color.rgb = midaDelta * color.rgb + (1.0 - midaDelta * color.a) * (transferColor.a * transferColor.rgb  * (1.0 - prevShadowWeight));
+    color.rgb = midaDelta * color.rgb + (1.0 - midaDelta * color.a) * (transferColor.a * transferColor.rgb  * (1.0 - prevShadowWeight * (1.0-midaShadowDelta)));
     color.a = midaDelta * color.a + (1.0 - midaDelta * color.a) * transferColor.a;
     
     

@@ -416,8 +416,19 @@ export default class Settings {
             elevation: new SliderSetting(sidebar, "Elevation", 0.0, 0.0, 3.1415, 0.001, "elevation", "elevation"),
             azimuth: new SliderSetting(sidebar, "Azimuth", 0.0, 0.0, 3.1415*2.0, 0.001, "azimuth", "azimuth"),
             rotation: new SliderSetting(sidebar, "Rotation", 3.1415, 0.0, 3.1415*2.0, 0.001, "rotation", "rotation"),
+            
+            midaFactor: new SliderSetting(sidebar, "Mida Pullback Factor", 2.0, 0.0, 15.0, 0.001, "midaFactor", "mida-factor"),
+            midaShadowFactor: new SliderSetting(sidebar, "Mida Shadow Pullback Factor", 8.0, 0.0, 15.0, 0.001, "midaFactor", "mida-factor"),
+            midaMethod: new SelectSetting(sidebar, "Mida shadow method", [
+                {value: "0", text: "Pure mida"},
+                {value: "1", text: "Shadow pullback"},
+                {value: "2", text: "2"},
+                {value: "3", text: "3"},
+                {value: "4", text: "4"},
+                {value: "5", text: "5"},
+            ]),
 
-            showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),
+            /*showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),
             isOrthoElem: new CheckboxSetting(sidebar, "Orthographic Camera", false, "orthographic-camera", "checkbox"),
             defaultColor: new ColorSelectSetting(sidebar, "Default color", "#FFE0BDFF", "defaultColor", "color-picker"),
             lightDistance: new SliderSetting(sidebar, "Light distance", 2.0, 0.5, 5.0, 0.05, "lightDistance", "light-distance"),
@@ -434,7 +445,7 @@ export default class Settings {
             //light: new LightSetting(sidebar, "Light position"),
             showCuttingPlane: new CheckboxSetting(sidebar, "Show cuttingplane", false, "cuttingplane", "checkbox"),
             cuttingPosition: new Vec3Setting(sidebar, "Cuttingplane position", false),
-            cuttingNormal: new Vec3Setting(sidebar, "Cuttingplane normal", true),
+            cuttingNormal: new Vec3Setting(sidebar, "Cuttingplane normal", true),*/
         };
 
         this.loadedData = data;
@@ -495,6 +506,19 @@ export default class Settings {
 
     public rotation(): number {
         return this.settings["rotation"].value();
+    }
+
+    public midaFactor(): number {
+        return this.settings["midaFactor"].value();
+    }
+
+    public midaShadowFactor(): number {
+        return this.settings["midaShadowFactor"].value();
+    }
+
+    public midaMethod(): number {
+        const value = this.settings["midaMethod"].value();
+        return parseInt(value);
     }
 
     public showCuttingplane(): boolean {

@@ -35,7 +35,7 @@ export default class ShadowView implements View {
         this.transferFunction = transferFunction;
         this.renderTargets = [];
         for(let i = 0; i < this.targets; ++i) {
-            this.renderTargets.push(new RenderTarget(gl, 1024, 1024, true));
+            this.renderTargets.push(new RenderTarget(gl, 768, 768, true));
         }
         this.presentedTarget = this.renderTargets[0];
         this.shadowBufferShader = initShaderProgram(gl, vert, frag);
@@ -55,8 +55,8 @@ export default class ShadowView implements View {
         //settings.multiplyLightTransform(camera.getRotation());
         //mat4.translate(this.modelViewMatrix, this.modelViewMatrix, vec3.negate(vec3.create(), this.modelCenter));
 
-        const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(0.0, 0.0, 0.0, 1.0), mat4.invert(mat4.create(), this.modelViewMatrix));
-        const eye = vec3.fromValues(eye4[0], eye4[1], eye4[2]);
+        const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(0.0, 0.0, 4.0, 1.0), mat4.invert(mat4.create(), this.modelViewMatrix));
+        const eye = vec3.fromValues(eye4[0], eye4[1], -eye4[2]);
 
 
         for(let i = 0; i < this.targets; ++i) {
@@ -140,6 +140,10 @@ export default class ShadowView implements View {
             this.shadowBufferShader.bindVec2("center", center);
             this.shadowBufferShader.bindVec2("scale", scale);
             this.shadowBufferShader.bindVec2("axes", axes);
+
+            this.shadowBufferShader.bindFloat("uMidaFactor", settings.midaFactor());
+            this.shadowBufferShader.bindFloat("uMidaShadowFactor", settings.midaShadowFactor());
+            this.shadowBufferShader.bindUniform1i("uMidaMethod", settings.midaMethod());
             
             this.gl.viewport(0, 0, pong.getWidth(), pong.getHeight());
 
