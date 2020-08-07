@@ -262,7 +262,7 @@ class LightSetting extends Setting {
         this.lightTransform = mat4.create();
         
         
-        this.camera = new Camera([0.0, 0.0, 0.0], this.elem, 0.0, true, true, true, true);
+        this.camera = new Camera([0.0, 0.0, 0.0]);
 
         const gl = this.elem.getContext("webgl2");
         if (gl === null) {
@@ -303,7 +303,7 @@ class LightSetting extends Setting {
         const createRotationMatrix = (): mat4 => {
             const modelViewMatrix = mat4.create();
 
-            mat4.mul(modelViewMatrix, this.camera.getTransform(), modelViewMatrix);
+            mat4.mul(modelViewMatrix, mat4.create(), modelViewMatrix);
 
             //modelViewMatrix = mat4.copy(mat4.create(), camera.getTransform());
             mat4.rotateX(modelViewMatrix, modelViewMatrix, Math.PI);
@@ -362,11 +362,11 @@ class LightSetting extends Setting {
 
         this.draw();
 
-        this.camera.setOnChange((): void => {
+        /*this.camera.setOnChange((): void => {
             if(this.draw == null) return; 
             this.draw();
             this.updated = true;
-        })
+        })*/
     }
     
     public getHtml(): HTMLElement {
@@ -380,7 +380,7 @@ class LightSetting extends Setting {
     multiplyLightTransform(transform: mat4): void {
         this.modelViewMatrix = mat4.copy(mat4.create(), transform);
         if(this.draw == null) return;
-        this.camera.setAddidionalTransform(this.modelViewMatrix);
+        // this.camera.setAddidionalTransform(this.modelViewMatrix);
         this.draw();
     }
 }
@@ -400,7 +400,7 @@ export default class Settings {
         const sidebar = document.getElementById("sidebar") as HTMLDivElement;
 
         this.settings = {
-            fps: new TextSetting(sidebar, null, "FPS: N/A"),
+            //fps: new TextSetting(sidebar, null, "FPS: N/A"),
             file: new SelectSetting(sidebar, "File", [
                 {value: "./data/hand", text: "Hand"},
                 {value: "./data/manix", text: "Manix"},
@@ -421,11 +421,7 @@ export default class Settings {
             midaShadowFactor: new SliderSetting(sidebar, "Mida Shadow Pullback Factor", 8.0, 0.0, 15.0, 0.001, "midaFactor", "mida-factor"),
             midaMethod: new SelectSetting(sidebar, "Mida shadow method", [
                 {value: "0", text: "Pure mida"},
-                {value: "1", text: "Shadow pullback"},
-                {value: "2", text: "2"},
-                {value: "3", text: "3"},
-                {value: "4", text: "4"},
-                {value: "5", text: "5"},
+                {value: "3", text: "Shadow pullback with mida"},
             ]),
 
             /*showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),

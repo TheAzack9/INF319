@@ -40,9 +40,9 @@ export default class RayCasterController {
         const div = document.createElement("div");
         div.classList.add("transfer-function");
         
-        const label = document.createElement("label");
+        /*const label = document.createElement("label");
         label.innerText = "Raycast Histogram";
-        div.appendChild(label);
+        div.appendChild(label);*/
         
         this.canvas = document.createElement("canvas");
         div.appendChild(this.canvas);
@@ -62,7 +62,7 @@ export default class RayCasterController {
      * Redraw the transfer functions and histogram to the canvas.
      */
     private draw(): void {
-        const margin = this.margin, spacing = this.spacing;
+        /*const margin = this.margin, spacing = this.spacing;
         const itemCount = this.histogramData.length;
         const totalWidth = (this.canvas.width - (margin * 2) - ((itemCount - 1) * spacing));
         const itemWidth = totalWidth / itemCount;
@@ -76,7 +76,7 @@ export default class RayCasterController {
             const x = margin + i * (spacing + itemWidth);
             const h = maxHeight * this.histogramData[i] / maxValue;
             this.ctx.fillRect(x, margin + maxHeight - h, itemWidth, h);
-        }
+        }*/
     }
 
     private onclick(ev: JQuery.DoubleClickEvent): void {
@@ -94,7 +94,8 @@ export default class RayCasterController {
             projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, this.aspect, zNear, zFar);
         }
         
-        const modelViewMatrix = mat4.copy(mat4.create(), this.camera.getTransform());
+        // const modelViewMatrix = mat4.copy(mat4.create(), this.camera.getTransform());
+        const modelViewMatrix = mat4.create();
         
         const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(0.0, 0.0, 0.0, 1.0), modelViewMatrix);
         const eye = vec3.fromValues(eye4[0], eye4[1], eye4[2]);

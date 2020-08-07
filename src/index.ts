@@ -38,7 +38,7 @@ async function Init(): Promise<void> {
     const transferFunction = new TransferFunctionController(sidebar, settings);
     //const renderView = new MainView(gl, transferFunction);
     //const renderSlice = new SliceView(gl, renderView.getRenderTarget(), settings);
-    const camera = new Camera([0.5, 0.5, 0.5], document.getElementById("theCanvas") as HTMLCanvasElement);
+    const camera = new Camera([0.5, 0.5, 0.5]);
     const view = createSquareMesh(-1.0, 1.0);
     const rayCasterController = new RayCasterController(loadedData, sidebar, settings, camera);
 

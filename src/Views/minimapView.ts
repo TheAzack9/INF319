@@ -72,8 +72,8 @@ export default class MinimapView implements View {
         
         this.modelViewMatrix = mat4.create();
         mat4.translate(this.modelViewMatrix, this.modelViewMatrix, vec3.fromValues(0.0, 0.0, -4.0));
-        mat4.mul(this.modelViewMatrix, this.modelViewMatrix, camera.getRotation());
-        settings.multiplyLightTransform(camera.getRotation());
+        // mat4.mul(this.modelViewMatrix, this.modelViewMatrix, camera.getRotation());
+        // settings.multiplyLightTransform(camera.getRotation());
         //mat4.translate(this.modelViewMatrix, this.modelViewMatrix, vec3.negate(vec3.create(), this.modelCenter));
 
         const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(0.0, 0.0, 0.0, 1.0), mat4.invert(mat4.create(), this.modelViewMatrix));
@@ -117,24 +117,24 @@ export default class MinimapView implements View {
         gl.drawElements(gl.TRIANGLES, this.outline.indiceCount(), gl.UNSIGNED_SHORT, 0);
         
 
-        const cameraZoom = camera.getZoomFactor();
-        const cameraOffset = camera.getTranslation();
-        const nOffset = vec3.negate(vec3.create(), cameraOffset)
-        const scaleVector =  vec3.fromValues(1/cameraZoom * this.viewAspect, 1/cameraZoom, 1/cameraZoom);
-        const transform = mat4.create();
-        mat4.scale(transform, transform, scaleVector);
+        // const cameraZoom = camera.getZoomFactor();
+        // const cameraOffset = camera.getTranslation();
+        // const nOffset = vec3.negate(vec3.create(), cameraOffset)
+        // const scaleVector =  vec3.fromValues(1/cameraZoom * this.viewAspect, 1/cameraZoom, 1/cameraZoom);
+        // const transform = mat4.create();
+        // mat4.scale(transform, transform, scaleVector);
 
-        vec3.mul(nOffset, nOffset, scaleVector);
+        // vec3.mul(nOffset, nOffset, scaleVector);
 
-        mat4.translate(transform, transform, vec3.fromValues(nOffset[0], nOffset[1], 0.0));
+        // mat4.translate(transform, transform, vec3.fromValues(nOffset[0], nOffset[1], 0.0));
 
-        gl.uniformMatrix4fv(
-            this.viewInfo.uniformLocations.transform,
-            false,
-            transform);
+        // gl.uniformMatrix4fv(
+        //     this.viewInfo.uniformLocations.transform,
+        //     false,
+        //     transform);
 
-        this.cameraOutline.bindShader(gl, this.viewInfo.program);
-        gl.drawElements(gl.TRIANGLES, this.cameraOutline.indiceCount(), gl.UNSIGNED_SHORT, 0);
+        // this.cameraOutline.bindShader(gl, this.viewInfo.program);
+        // gl.drawElements(gl.TRIANGLES, this.cameraOutline.indiceCount(), gl.UNSIGNED_SHORT, 0);
     }
 
     setViewAspectRatio(aspect: number): void {

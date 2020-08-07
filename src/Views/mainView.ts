@@ -71,8 +71,8 @@ export default class MainView implements View {
                 aspect, zNear, zFar);
         }
         
-        this.modelViewMatrix = mat4.copy(mat4.create(), camera.getTransform());
-        settings.multiplyLightTransform(camera.getRotation());
+        // this.modelViewMatrix = mat4.copy(mat4.create(), camera.getTransform());
+        // settings.multiplyLightTransform(camera.getRotation());
         //mat4.translate(this.modelViewMatrix, this.modelViewMatrix, vec3.negate(vec3.create(), this.modelCenter));
 
         const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(0.0, 0.0, 0.0, 1.0), mat4.invert(mat4.create(), this.modelViewMatrix));

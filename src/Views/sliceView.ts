@@ -187,8 +187,8 @@ export default class SliceView implements View {
                 mat4.perspective(perspective, fieldOfView, 
                     aspect, zNear, zFar);
             }
-            const lookat = mat4.copy(mat4.create(), camera.getTransform());
-            mat4.translate(lookat, lookat, vec3.negate(vec3.create(), this.modelCenter));
+            // const lookat = mat4.copy(mat4.create(), camera.getTransform());
+            // mat4.translate(lookat, lookat, vec3.negate(vec3.create(), this.modelCenter));
 
             // "Center" the slices
             const transVec: vec3 = [0.5, 0.5, 0.5];
@@ -216,7 +216,7 @@ export default class SliceView implements View {
             mat4.translate(matrix, matrix, [0, 0, 2 * zOff - 1]);
 
             mat4.multiply(matrix, loadedData.scale, matrix);
-            mat4.multiply(matrix, lookat, matrix);
+            // mat4.multiply(matrix, lookat, matrix);
             mat4.multiply(matrix, perspective, matrix);
             
             gl.uniformMatrix4fv(this.programInfo.uniformLocations.projectionMatrix, false, matrix);
