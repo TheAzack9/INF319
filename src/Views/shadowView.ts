@@ -56,7 +56,9 @@ export default class ShadowView implements View {
         //mat4.translate(this.modelViewMatrix, this.modelViewMatrix, vec3.negate(vec3.create(), this.modelCenter));
         // const invCam = mat4.invert(mat4.create(), this.modelViewMatrix);
         // const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(1.0, 0.0, 0.0, 1.0), this.modelViewMatrix);
-        const eye = camera.position();
+        const eye = camera.position() ;
+        const zoomFac = Math.min(4.0, Math.max(0.5, 1/(camera.getRadius()/4)));
+        vec3.scale(spaceScale, spaceScale, zoomFac);
 
 
         for(let i = 0; i < this.targets; ++i) {

@@ -48,7 +48,7 @@ export default class Camera {
     }
 
     private onMouseScroll(ev: WheelEvent): void {
-        this.zoom(-ev.deltaY / 20);
+        this.zoom(-ev.deltaY / 200);
     }
 
     public rotate(dTheta: number, dPhi: number): void {
@@ -58,12 +58,14 @@ export default class Camera {
     }
 
     public zoom(distance: number): void {
-        this.radius = Math.max(0, this.radius - distance);
+        this.radius = Math.min(8.0, Math.max(1.0, this.radius - distance));
         this.updated = true;
     }
 
+    public getRadius(): number { return this.radius;}
+
     public position(): vec3 {
-        const r = this.radius, phi = this.phi, theta = this.theta;
+        const r = Math.max(0.1, this.radius), phi = this.phi, theta = this.theta;
         const x = this.target[0] + r * Math.sin(phi) * Math.sin(theta);
         const y = this.target[1] + r * Math.cos(phi);
         const z = this.target[2] + r * Math.sin(phi) * Math.cos(theta);

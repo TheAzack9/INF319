@@ -425,9 +425,9 @@ export default class Settings {
             ]),
 
             /*showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),
-            isOrthoElem: new CheckboxSetting(sidebar, "Orthographic Camera", false, "orthographic-camera", "checkbox"),
+            isOrthoElem: new CheckboxSetting(sidebar, "Orthographic Camera", false, "orthographic-camera", "checkbox"),*/
             defaultColor: new ColorSelectSetting(sidebar, "Default color", "#FFE0BDFF", "defaultColor", "color-picker"),
-            lightDistance: new SliderSetting(sidebar, "Light distance", 2.0, 0.5, 5.0, 0.05, "lightDistance", "light-distance"),
+            /*lightDistance: new SliderSetting(sidebar, "Light distance", 2.0, 0.5, 5.0, 0.05, "lightDistance", "light-distance"),
             accumulationMethod: new SelectSetting(sidebar, "Color accumulation Method", [
                 {value: "0", text: "Accumulate"},
                 {value: "1", text: "Maximum Intensity Projection"},
