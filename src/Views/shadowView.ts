@@ -29,10 +29,12 @@ export default class ShadowView implements View {
     private presentedTarget: RenderTarget;
 
     private transferFunction: TransferFunctionController;
+    private innerTransferfunction: TransferFunctionController;
 
-    constructor(gl: WebGL2RenderingContext, transferFunction: TransferFunctionController) {
+    constructor(gl: WebGL2RenderingContext, transferFunction: TransferFunctionController, innerTransferfunction: TransferFunctionController) {
         this.gl = gl;
         this.transferFunction = transferFunction;
+        this.innerTransferfunction = innerTransferfunction;
         this.renderTargets = [];
         for(let i = 0; i < this.targets; ++i) {
             this.renderTargets.push(new RenderTarget(gl, 768, 768, true));
@@ -81,6 +83,7 @@ export default class ShadowView implements View {
         }
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         const transferFunctionTexture = this.transferFunction.getTransferFunctionTexture(this.gl);
+        const innerTransferFunctionTexture = this.innerTransferfunction.getTransferFunctionTexture(this.gl);
 
         // Ping pong shader s for shadow buffer accumulation
         for(let i = 1; i < this.layers; ++i) {
@@ -102,6 +105,7 @@ export default class ShadowView implements View {
             
             // Bind transfer function
             this.shadowBufferShader.bindTexture2D("uTransferFunction", 3, transferFunctionTexture);
+            this.shadowBufferShader.bindTexture2D("uInnerTransferFunction", 4, innerTransferFunctionTexture);
             
             // Misc variables
             this.shadowBufferShader.bindVec3("uEye", eye);

@@ -16,6 +16,7 @@ uniform sampler2D uPreviousBuffer;
 uniform sampler2D uPreviousShadowBuffer;
 uniform sampler3D uData;
 uniform sampler2D uTransferFunction;
+uniform sampler2D uInnerTransferFunction;
 
 uniform vec2 center;
 uniform vec2 scale;
@@ -38,7 +39,7 @@ float noise(float p){
 	return mix(rand(fl), rand(fl + 1.0), fc);
 }
 
-float calculateShadowScattering() {
+float calculateShadowScattering(vec4 channel) {
     
     float sum = 0.0;
     float fRand = rand(gl_FragCoord.x * 437.0 + gl_FragCoord.y * 27313.0 + gl_FragCoord.z * 984785.0);
@@ -63,7 +64,7 @@ float calculateShadowScattering() {
         lookup.xy *= 0.5;
 
         vec4 lookupColor = texture(uPreviousShadowBuffer, lookup.xy);
-        sum += lookupColor.r;
+        sum += length(lookupColor * channel);
     }
     return sum / float(3);
 }
@@ -82,6 +83,7 @@ void main() {
     vec4 prevColor = texture(uPreviousBuffer, properTexCoord);
     vec4 prevShadowColor = texture(uPreviousShadowBuffer, properTexCoord);
     float prevShadowWeight = prevShadowColor.r;
+    float prevInnerShadowWeight = prevShadowColor.b;
     float prevMax = prevShadowColor.g;
 
     float luminance = czm_luminance(prevColor.rgb);
@@ -113,17 +115,23 @@ void main() {
 
 
     vec4 transferColor = texture(uTransferFunction, vec2(weight, 0.5));
+    vec4 innerTransferColor = texture(uInnerTransferFunction, vec2(weight, 0.5));
     //vec4 transferColor = vec4(weight);
     transferColor.a /= 4.0;
+    innerTransferColor.a /= 4.0;
 
     color = prevColor;
 
-    float scatterAverage = calculateShadowScattering();
+    float scatterAverage = calculateShadowScattering(vec4(1.0, 0.0, 0.0, 0.0));
     float shadowResult = clamp(transferColor.a + scatterAverage - midaShadowDelta, 0.0, 1.0);
-    shadowColor = vec4(shadowResult, max(prevMax, weight), 0.0, 0.0);
+
+    float innerscatterAverage = calculateShadowScattering(vec4(0.0, 0.0, 1.0, 0.0));
+    float innershadowResult = clamp(innerTransferColor.a + innerscatterAverage, 0.0, 1.0);
+
+    shadowColor = vec4(shadowResult, max(prevMax, weight), innershadowResult, 0.0);
 
     color.rgb = midaDelta * color.rgb + (1.0 - midaDelta * color.a) * (transferColor.a * transferColor.rgb  * (1.0 - prevShadowWeight * (1.0-midaShadowDelta)));
-    color.a = midaDelta * color.a + (1.0 - midaDelta * color.a) * transferColor.a;
+    color.a = midaDelta * color.a + (1.0 - midaDelta * color.a) * transferColor.a + (1.0 - color.a) * innerTransferColor.a;
     
     
 

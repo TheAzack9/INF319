@@ -36,6 +36,7 @@ async function Init(): Promise<void> {
     const settings = new Settings(loadedData);
     const sidebar = document.getElementById("sidebar") as HTMLDivElement;
     const transferFunction = new TransferFunctionController(sidebar, settings);
+    const transferFunction2 = new TransferFunctionController(sidebar, settings);
     //const renderView = new MainView(gl, transferFunction);
     //const renderSlice = new SliceView(gl, renderView.getRenderTarget(), settings);
     const camera = new Camera([0.5, 0.5, 0.5]);
@@ -55,7 +56,7 @@ async function Init(): Promise<void> {
     let file = settings.getFile();
     let newFile = file;
 
-    const shadowView = new ShadowView(gl, transferFunction);
+    const shadowView = new ShadowView(gl, transferFunction, transferFunction2);
 
     // eslint-disable-next-line no-constant-condition
     const renderLoop = (): void => {
@@ -150,6 +151,7 @@ async function Init(): Promise<void> {
             
             //renderSlice.recalculate();
             transferFunction.recalculate();
+            transferFunction2.recalculate();
             forceUpdate = true;
         }
         await new Promise(resolve => setTimeout(() => resolve(reloadFileWatcher()), 1000));
