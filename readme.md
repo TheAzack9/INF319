@@ -22,6 +22,7 @@ npm run build
 ## Running
 
 ```sh
+# Note: Remember npm install :)
 # Running
 npm run start:dev
 ```
