@@ -1,4 +1,6 @@
-/dist
+*wholebody.*
+*manix.*
+*sinusveins.*
 /node_modules
 /test/js
 /test/browsertest/js
