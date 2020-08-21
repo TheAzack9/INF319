@@ -412,16 +412,16 @@ export default class Settings {
             ]),
 
             ratioxy: new SliderSetting(sidebar, "RatioXY", 0.5, 0.0, 1.0, 0.001, "ratioxy", "ratioxy"),
-            shadow: new SliderSetting(sidebar, "Shadow", 0.0, 0.0, 1.0, 0.001, "shadow", "shadow"),
-            elevation: new SliderSetting(sidebar, "Elevation", 0.0, 0.0, 3.1415, 0.001, "elevation", "elevation"),
-            azimuth: new SliderSetting(sidebar, "Azimuth", 0.0, 0.0, 3.1415*2.0, 0.001, "azimuth", "azimuth"),
-            rotation: new SliderSetting(sidebar, "Rotation", 3.1415, 0.0, 3.1415*2.0, 0.001, "rotation", "rotation"),
+            shadow: new SliderSetting(sidebar, "Shadow", 0.3, 0.0, 1.0, 0.001, "shadow", "shadow"),
+            elevation: new SliderSetting(sidebar, "Elevation", 1.0, 0.0, 3.1415, 0.001, "elevation", "elevation"),
+            azimuth: new SliderSetting(sidebar, "Azimuth", 5.0, 0.0, 3.1415*2.0, 0.001, "azimuth", "azimuth"),
+            rotation: new SliderSetting(sidebar, "Rotation", 2.0, 0.0, 3.1415*2.0, 0.001, "rotation", "rotation"),
             
             midaFactor: new SliderSetting(sidebar, "Mida Pullback Factor", 2.0, 0.0, 15.0, 0.001, "midaFactor", "mida-factor"),
             midaShadowFactor: new SliderSetting(sidebar, "Mida Shadow Pullback Factor", 8.0, 0.0, 15.0, 0.001, "midaFactor", "mida-factor"),
             midaMethod: new SelectSetting(sidebar, "Mida shadow method", [
-                {value: "0", text: "Pure mida"},
                 {value: "3", text: "Shadow pullback with mida"},
+                {value: "0", text: "Pure mida"},
             ]),
 
             /*showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),

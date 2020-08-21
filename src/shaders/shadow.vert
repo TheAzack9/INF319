@@ -4,6 +4,8 @@ layout(location=0) in vec3 aVertexPosition;
 in vec2 aTextureCoord;
 
 uniform vec3 uEye;
+uniform vec3 uUp;
+uniform vec3 uLeft;
 uniform vec3 uScale;
 uniform float uOffset;
 
@@ -13,11 +15,10 @@ out vec2 properTexCoord;
 out vec3 layerPos;
 
 void main() {
-    vec3 viewDir = normalize(vec3(0.5) - uEye);
 
-    vec3 dir = viewDir / uScale.z;
-    vec3 xdir = normalize(cross(vec3(0.0, 1.0, 0.0), dir)) / uScale.x;
-    vec3 ydir = normalize(cross(dir, xdir)) / uScale.y;
+    vec3 dir = normalize(uEye) / uScale.z;
+    vec3 xdir = normalize(uLeft) / uScale.x;
+    vec3 ydir = normalize(uUp) / uScale.y;
 
     float offset = uOffset - 0.5;
     vec2 tTexCoord = aTextureCoord - vec2(0.5);

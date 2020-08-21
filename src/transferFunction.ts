@@ -55,16 +55,19 @@ export default class TransferFunctionController {
         this.canvas.onmouseleave = this.onMouseLeave.bind(this);
 
         const air = new Color(255, 255, 255);
+        const gray = new Color(180, 180, 180);
         const skin = new Color(255, 205, 148);
         const vessel = new Color(200, 0, 0);
         const bone = new Color(254, 254, 254);
         this.transferFunction = new TransferFunction([
             [0, 0, air],
+            [0.1, 0, air],
+            [0.2, 0.5, gray],
             [0.3, 0, air],
-            [0.3, 1.0, skin],
-            [0.4, 0.2, skin],
-            [0.47, 0.5, vessel],
-            [0.47, 1, bone],
+            [0.38, 0.0, skin],
+            [0.47, 1.0, vessel],
+            [0.5, 0, air],
+            [0.7, 0.75, bone],
             [1.0, 1.0, bone]
         ]);
 

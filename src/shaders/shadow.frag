@@ -78,7 +78,7 @@ float czm_luminance(vec3 rgb)
 
 void main() {
     float weight = texture(uData, texCoord ).r;
-    if(texCoord.x > 1.0 || texCoord.x < 0.0 || texCoord.y > 1.0 || texCoord.y < 0.0 || texCoord.z > 1.0 || texCoord.z < 0.0) weight = 0.0;
+    if(texCoord.x >= 0.99 || texCoord.x <= 0.01 || texCoord.y >= 0.99 || texCoord.y <= 0.01 || texCoord.z >= 0.99 || texCoord.z <= 0.01) weight = 0.0;
     vec4 prevColor = texture(uPreviousBuffer, properTexCoord);
     vec4 prevShadowColor = texture(uPreviousShadowBuffer, properTexCoord);
     float prevShadowWeight = prevShadowColor.r;

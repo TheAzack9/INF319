@@ -105,6 +105,8 @@ export default class ShadowView implements View {
             
             // Misc variables
             this.shadowBufferShader.bindVec3("uEye", eye);
+            this.shadowBufferShader.bindVec3("uUp", camera.upDir());
+            this.shadowBufferShader.bindVec3("uLeft", camera.leftDir());
             this.shadowBufferShader.bindVec3("uScale", spaceScale);
             this.shadowBufferShader.bindFloat("uOffset", i/this.layers);
             this.shadowBufferShader.bindUniform1i("uIndex", i);

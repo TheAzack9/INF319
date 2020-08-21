@@ -131,7 +131,7 @@ export default class MainView implements View {
         const avgFps = this.fpsLog.reduce((a, b) => a+b, 0) / fpsLogLength;
         
         // Check if it's time to pause rendering.
-        const viewUpdated = settingsUpdated || camera.isUpdated();
+        const viewUpdated = settingsUpdated;
         if (!viewUpdated && this.lastSettingsUpdate + 750 < Date.now()) {
             if (this.paused) return false;
             this.paused = true;
