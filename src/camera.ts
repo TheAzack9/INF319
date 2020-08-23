@@ -32,7 +32,6 @@ export default class Camera {
 
         const x = ev.offsetX * 2.0 / this.canvas.clientWidth - 1.0;
         const y = ev.offsetY * 2.0 / this.canvas.clientHeight - 1.0;
-        console.log(x, y);
 
         if (!this.mouseDown) {
             this.lastMousePos[0] = x;
@@ -64,7 +63,7 @@ export default class Camera {
         const mousePos = vec2.fromValues(dx, dy);
         const cRot = this.screentoArcball(mousePos);
         const pRot = this.screentoArcball(this.lastMousePos);
-        const newTarget = quat.mul(quat.create(), quat.mul(quat.create(), cRot, pRot), this.targetQuat);
+        const newTarget = quat.mul(quat.create(), quat.mul(quat.create(), this.targetQuat, pRot), cRot);
         this.targetQuat = quat.normalize(newTarget, newTarget);
     }
 
