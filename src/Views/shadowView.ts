@@ -47,7 +47,7 @@ export default class ShadowView implements View {
 
         const data = settings.getLoadedData();
         const scaleMatrix = settings.getLoadedData().scale;
-        const spaceScale = vec3.transformMat4(vec3.create(), vec3.fromValues(1, 1, 1), scaleMatrix);
+        const spaceScale = mat4.invert(mat4.create(), scaleMatrix);
         //const zoom = camera.zoom();
         //vec3.scale(spaceScale, spaceScale, zoom);
 
@@ -56,9 +56,11 @@ export default class ShadowView implements View {
         //mat4.translate(this.modelViewMatrix, this.modelViewMatrix, vec3.negate(vec3.create(), this.modelCenter));
         // const invCam = mat4.invert(mat4.create(), this.modelViewMatrix);
         // const eye4 = vec4.transformMat4(vec4.create(), vec4.fromValues(1.0, 0.0, 0.0, 1.0), this.modelViewMatrix);
-        const eye = camera.position() ;
-        const zoomFac = Math.min(4.0, Math.max(0.5, 1/(camera.getRadius()/4)));
-        vec3.scale(spaceScale, spaceScale, zoomFac);
+        const zoomFac = camera.getRadius();
+        mat4.scale(spaceScale, spaceScale, vec3.fromValues(zoomFac, zoomFac, zoomFac));
+        // vec3.scale(spaceScale, spaceScale, -zoomFac / 20.0);
+        const eye = camera.position(1.0) ;
+        //spaceScale = vec3.fromValues(zoomFac, zoomFac, zoomFac);
 
 
         for(let i = 0; i < this.targets; ++i) {
@@ -105,11 +107,12 @@ export default class ShadowView implements View {
             
             // Misc variables
             this.shadowBufferShader.bindVec3("uEye", eye);
-            this.shadowBufferShader.bindVec3("uUp", camera.upDir());
-            this.shadowBufferShader.bindVec3("uLeft", camera.leftDir());
-            this.shadowBufferShader.bindVec3("uScale", spaceScale);
+            this.shadowBufferShader.bindVec3("uUp", camera.upDir(1.0));
+            this.shadowBufferShader.bindVec3("uLeft", camera.leftDir(1.0));
             this.shadowBufferShader.bindFloat("uOffset", i/this.layers);
+            this.shadowBufferShader.bindFloat("uAspect", aspect);
             this.shadowBufferShader.bindUniform1i("uIndex", i);
+            this.shadowBufferShader.bindMat4("uTest", spaceScale);
 
             const zDistance = 1.0/this.layers;
             const softness = settings.shadow();

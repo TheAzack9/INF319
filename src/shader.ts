@@ -41,6 +41,11 @@ export class Shader {
         const uniformLocation = this.getUniformLocation(location);
         this.gl.uniform2fv(uniformLocation, vec);
     }
+    
+    public bindMat4(location: string, mat: mat4) {
+        const uniformLocation = this.getUniformLocation(location);
+        this.gl.uniformMatrix4fv(uniformLocation, false, mat);
+    }
 
     public bindFloat(location: string, float: number): void {
         const uniformLocation = this.getUniformLocation(location);
@@ -123,6 +128,7 @@ export async function bindTexture(url: string, ini: string, gl: WebGL2RenderingC
     const largestAxis = Math.max(width, Math.max(height, depth));
 
     const volumeScale = vec3.fromValues(width/largestAxis, height/largestAxis, depth/largestAxis);
+    console.log("VOLUME SCALE", volumeScale);
     
     const datScaleX = parseFloat(sizes.DatFile["oldDat Spacing X"]);
     const datScaleY = parseFloat(sizes.DatFile["oldDat Spacing Y"]);

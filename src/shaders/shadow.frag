@@ -7,7 +7,6 @@ precision highp sampler3D;
 in vec3 texCoord;
 in vec3 position;
 in vec2 properTexCoord;
-in vec3 layerPos;
 
 layout(location = 0) out lowp vec4 color;
 layout(location = 1) out lowp vec4 shadowColor;
