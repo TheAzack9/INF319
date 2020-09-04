@@ -83,8 +83,9 @@ void main() {
     float prevShadowWeight = prevShadowColor.r;
     float prevMax = prevShadowColor.g;
 
-    float luminance = czm_luminance(prevColor.rgb);
+    //float luminance = czm_luminance(prevColor.rgb);
 
+    vec4 transferColor = texture(uTransferFunction, vec2(weight, 0.5));
     float midaDelta = 1.0;
     float midaShadowDelta = 0.0;
     if(weight > prevMax) {
@@ -95,14 +96,7 @@ void main() {
         }
         else if(uMidaMethod == 1) {
             midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
-            midaShadowDelta = (weight-prevMax)*uMidaShadowFactor;
-        }
-        else if(uMidaMethod == 2) {
-            // midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
-            // midaShadowDelta = (weight-prevMax)*uMidaShadowFactor * (luminance);
-            
-            midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
-            midaShadowDelta = (weight-prevMax)*(uMidaShadowFactor * uMidaFactor);
+            midaShadowDelta = 0.0;
         }
         else if(uMidaMethod == 3) {
             midaDelta = 1.0 - (weight - prevMax) * uMidaFactor;
@@ -111,7 +105,6 @@ void main() {
     }
 
 
-    vec4 transferColor = texture(uTransferFunction, vec2(weight, 0.5));
     //vec4 transferColor = vec4(weight);
     transferColor.a /= 4.0;
 
@@ -120,12 +113,13 @@ void main() {
     float scatterAverage = calculateShadowScattering();
     float shadowResult = clamp(transferColor.a + scatterAverage - midaShadowDelta, 0.0, 1.0);
     shadowColor = vec4(shadowResult, max(prevMax, weight), 0.0, 0.0);
-
-    color.rgb = midaDelta * color.rgb + (1.0 - midaDelta * color.a) * (transferColor.a * transferColor.rgb  * (1.0 - prevShadowWeight * (1.0-midaShadowDelta)));
+    float shadowFactor = 0.0;
+    if(uMidaMethod == 0 || uMidaMethod == 3) {
+            shadowFactor = prevShadowWeight;
+    }
+    color.rgb = midaDelta * color.rgb + (1.0 - midaDelta * color.a) * (transferColor.a * transferColor.rgb  * (1.0 - shadowFactor));
     color.a = midaDelta * color.a + (1.0 - midaDelta * color.a) * transferColor.a;
     
-    
-
     
     //color.rgb *= prevShadowColor.r;
     //color = transferColor;

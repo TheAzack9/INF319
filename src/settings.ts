@@ -421,7 +421,8 @@ export default class Settings {
             midaShadowFactor: new SliderSetting(sidebar, "Mida Shadow Pullback Factor", 8.0, 0.0, 15.0, 0.001, "midaFactor", "mida-factor"),
             midaMethod: new SelectSetting(sidebar, "Mida shadow method", [
                 {value: "3", text: "Shadow pullback with mida"},
-                {value: "0", text: "Pure mida"},
+                {value: "0", text: "Mida pullback only"},
+                {value: "1", text: "Mida"},
             ]),
 
             /*showSlices: new CheckboxSetting(sidebar, "Show Slices", false, "show-slices", "checkbox"),
